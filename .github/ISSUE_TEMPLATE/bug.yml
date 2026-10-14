@@ -1,0 +1,27 @@
+name: Bug report
+description: Report a reproducible TokenCal issue without sharing private session logs.
+body:
+  - type: input
+    id: version
+    attributes:
+      label: TokenCal version and platform
+      placeholder: v0.1.0, macOS 14 ARM64 or Windows 11 x64
+    validations:
+      required: true
+  - type: textarea
+    id: issue
+    attributes:
+      label: What happened?
+      description: Include expected behavior and concise reproduction steps. Do not attach raw logs, credentials, or local caches.
+    validations:
+      required: true
+  - type: input
+    id: provider
+    attributes:
+      label: Agent and version
+      placeholder: Codex CLI version or Claude Code version
+  - type: textarea
+    id: synthetic
+    attributes:
+      label: Optional synthetic usage record
+      description: For parser issues only. Remove prompts, paths, identifiers, and organization details.
