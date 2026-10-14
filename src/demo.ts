@@ -142,7 +142,7 @@ export function demoSnapshot(): Snapshot {
     unpricedTokens: 0,
   };
   return {
-    version: '0.2.0',
+    version: '0.2.1',
     collectedAt: now,
     scanning: false,
     demo: true,

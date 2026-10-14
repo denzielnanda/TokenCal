@@ -27,6 +27,8 @@ TokenCal is a free, open-source desktop companion for **Claude Code** and **Code
 
 No account, API key, terminal, Node.js, Xcode, or folder setup is required to use a downloaded app. Automatic detection covers native folders, custom agent homes, legacy Claude folders, and running WSL distributions. The first scan of a large history may take a few seconds. Source details and manual overrides are optional.
 
+Move the dashboard by its system title bar, header, or TokenCal logo. The tray panel can be moved by its header too.
+
 Closing the dashboard keeps TokenCal in the menu bar/tray. Right-click its icon to refresh, show the widget, or quit. Launch at login is optional.
 
 Before a public release, the maintainer should sign and notarize installers. Current local builds use ad-hoc Mac signatures and unsigned Windows installers; see [validation](docs/validation.md) for the exact test and signing status.

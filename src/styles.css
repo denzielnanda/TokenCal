@@ -205,6 +205,13 @@ small {
   align-items: center;
   justify-content: space-between;
   -webkit-app-region: drag;
+  app-region: drag;
+  user-select: none;
+}
+.sidebar > .wordmark {
+  -webkit-app-region: drag;
+  app-region: drag;
+  user-select: none;
 }
 .topbar > span {
   display: flex;
@@ -222,6 +229,7 @@ small {
   align-items: center;
   gap: 18px;
   -webkit-app-region: no-drag;
+  app-region: no-drag;
 }
 .local-badge {
   display: flex;

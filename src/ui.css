@@ -427,6 +427,15 @@
   align-items: center;
   justify-content: space-between;
 }
+.compact-shell:not(.notch-shell) .compact-header {
+  -webkit-app-region: drag;
+  app-region: drag;
+  user-select: none;
+}
+.compact-header button {
+  -webkit-app-region: no-drag;
+  app-region: no-drag;
+}
 .compact-header .wordmark {
   font-size: 18px;
   gap: 8px;

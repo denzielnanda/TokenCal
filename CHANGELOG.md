@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.1 — 2026-10-14
+
+- Restore the dashboard's native title bar and allow dragging the header, TokenCal logo, and tray-panel header. Dashboard placement is checked on every attached display.
+- Explain stale Claude plan history with its last saved time and the menu-bar/tray refresh action; session tracking remains independent.
+
 ## 0.2.0 — 2026-10-14
 
 - Real MacBook notch layout using public Apple display APIs, automatic cutout detection, external-monitor support, and selectable placement in Settings.

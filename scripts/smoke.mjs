@@ -76,6 +76,49 @@ try {
     { timeout: 30000 },
   );
   await expect(page.getByText('Your usage, at a glance.')).toBeVisible();
+  const chrome = await application.evaluate(({ BrowserWindow }) => {
+    const w = BrowserWindow.getAllWindows().find((w) =>
+      w.webContents.getURL().includes('surface=dashboard'),
+    );
+    return { movable: w.isMovable(), bounds: w.getBounds(), content: w.getContentBounds() };
+  });
+  expect(chrome.movable).toBe(true);
+  expect(chrome.content.y).toBeGreaterThan(chrome.bounds.y);
+  const dragRegions = await page.evaluate(() => {
+    const region = (selector) => {
+      const style = getComputedStyle(document.querySelector(selector));
+      return style.getPropertyValue('app-region') || style.getPropertyValue('-webkit-app-region');
+    };
+    return {
+      header: region('.topbar'),
+      logo: region('.sidebar > .wordmark'),
+      controls: region('.topbar > div'),
+    };
+  });
+  expect(dragRegions).toEqual({ header: 'drag', logo: 'drag', controls: 'no-drag' });
+  const movement = await application.evaluate(({ BrowserWindow, screen }) => {
+    const w = BrowserWindow.getAllWindows().find((w) =>
+      w.webContents.getURL().includes('surface=dashboard'),
+    );
+    const original = w.getBounds();
+    const moves = [];
+    for (const display of screen.getAllDisplays()) {
+      const area = display.workArea;
+      const width = Math.max(860, Math.min(original.width, area.width));
+      const height = Math.max(640, Math.min(original.height, area.height));
+      const target = {
+        x: area.x + Math.min(40, Math.max(0, area.width - width)),
+        y: area.y + Math.min(40, Math.max(0, area.height - height)),
+        width,
+        height,
+      };
+      w.setBounds(target);
+      moves.push({ target, actual: w.getBounds() });
+    }
+    w.setBounds(original);
+    return moves;
+  });
+  for (const move of movement) expect(move.actual).toEqual(move.target);
   expect(await page.evaluate(() => typeof window.require)).toBe('undefined');
   const totals = await page.evaluate(
     async () => (await window.tokenCal.getSnapshot()).totals.today,
@@ -157,6 +200,10 @@ try {
   await expect.poll(() => application.windows().length).toBe(2);
   const popup = application.windows().find((w) => w !== page);
   await expect(popup.getByRole('button', { name: 'Open dashboard', exact: true })).toBeVisible();
+  const popupRegion = await popup.evaluate(() =>
+    getComputedStyle(document.querySelector('.compact-header')).getPropertyValue('app-region'),
+  );
+  expect(popupRegion).toBe('drag');
   await fs.mkdir('.cache/screenshots', { recursive: true });
   await popup.screenshot({ path: '.cache/screenshots/tray.png' });
   await popup.getByRole('button', { name: 'Open dashboard', exact: true }).click();
@@ -170,7 +217,7 @@ try {
   await page.getByRole('button', { name: 'Back to my usage' }).click();
   expect(errors).toEqual([]);
   console.log(
-    'Desktop smoke passed: collector, sandbox, navigation, search, session details, settings persistence, widget, tray popup, CSV export, sample mode.',
+    'Desktop smoke passed: native title bar, movable windows, display placement, drag regions, collector, sandbox, navigation, search, session details, settings persistence, widget, tray popup, CSV export, sample mode.',
   );
 } finally {
   await application?.close();

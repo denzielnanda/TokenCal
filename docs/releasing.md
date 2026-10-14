@@ -5,7 +5,7 @@
 1. Run `npm ci`, `npm run check`, and `npm run test:desktop` on macOS and Windows with Node.js 24 LTS.
 2. Verify the official pricing sources and update the dated list and accuracy documentation when needed.
 3. Update `package.json`, the version in `electron/summary.ts`, and `CHANGELOG.md`; regenerate the lockfile with `npm install --package-lock-only`.
-4. Commit the source to your public GitHub repository. Push an annotated matching version tag, for example `v0.2.0`.
+4. Commit the source to your public GitHub repository. Push an annotated matching version tag, for example `v0.2.1`.
 5. Review the generated **draft** GitHub release, install each architecture on real hardware, and publish it when verified.
 
 Version tags trigger native macOS and Windows jobs. Manual workflow runs produce downloadable workflow artifacts without creating a release. Built installers live under `release/`, which is ignored by Git.
