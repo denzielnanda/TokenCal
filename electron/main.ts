@@ -15,9 +15,12 @@ import {
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { Worker } from 'node:worker_threads';
-import type { Settings, Snapshot } from '../src/shared/types';
+import { execFile } from 'node:child_process';
+import { promisify } from 'node:util';
+import type { Settings, Snapshot, WidgetGeometry } from '../src/shared/types';
 import { defaultSettings, validateSettings } from './settings';
 import { buildSnapshot } from './summary';
+import { parseNativeDisplays, widgetGeometry, type NativeDisplay } from './notch';
 
 protocol.registerSchemesAsPrivileged([
   { scheme: 'tokencal', privileges: { standard: true, secure: true, supportFetchAPI: true } },
@@ -37,6 +40,9 @@ let worker: Worker | null = null,
   scanning = false,
   rescan = false;
 let settings = defaultSettings();
+let nativeDisplays: NativeDisplay[] = [],
+  widget: WidgetGeometry | undefined,
+  notchExpanded = false;
 let snapshot = buildSnapshot([], settings, [], {
   provider: 'claude',
   plan: null,
@@ -52,7 +58,7 @@ async function saveSettings() {
   await fs.rename(tmp, settingsFile());
 }
 function publish() {
-  snapshot = { ...snapshot, settings, scanning };
+  snapshot = { ...snapshot, settings, scanning, widget };
   for (const w of [dashboard, popup, notch])
     if (w && !w.isDestroyed()) w.webContents.send('snapshot:changed', snapshot);
   const cost = snapshot.totals.today.cost.toFixed(2);
@@ -116,7 +122,8 @@ function createWindow(surface: 'dashboard' | 'popup' | 'notch') {
     frame: surface === 'dashboard',
     resizable: !compact,
     transparent: overlay,
-    backgroundColor: overlay ? '#00000000' : '#f6f7f3',
+    enableLargerThanScreen: overlay,
+    backgroundColor: overlay ? '#00000000' : '#f5f6f8',
     title: 'TokenCal',
     titleBarStyle:
       surface === 'dashboard' && process.platform === 'darwin' ? 'hiddenInset' : undefined,
@@ -201,23 +208,37 @@ function positionPopup() {
       : Math.max(area.y + 6, area.y + area.height - height - 6);
   popup.setBounds({ x, y, width, height });
 }
-function positionNotch(expanded = false) {
-  if (!notch) return;
-  const display = screen.getPrimaryDisplay(),
-    width = expanded ? 460 : 330,
-    height = expanded ? 610 : 48;
-  // Stay below the system menu area so hardware camera cutouts cannot obscure text.
-  notch.setBounds({
-    x: Math.round(display.workArea.x + (display.workArea.width - width) / 2),
-    y: display.workArea.y,
-    width,
-    height: Math.min(height, display.workArea.height),
-  });
+function positionNotch() {
+  widget = widgetGeometry(
+    screen.getAllDisplays(),
+    screen.getPrimaryDisplay().id,
+    nativeDisplays,
+    settings.widgetMode,
+  );
+  if (notch && !notch.isDestroyed())
+    notch.setBounds(notchExpanded ? widget.expanded : widget.collapsed);
+}
+async function readDisplays() {
+  if (process.platform === 'darwin') {
+    try {
+      const helper = app.isPackaged
+        ? path.join(process.resourcesPath, 'notch-info')
+        : path.join(app.getAppPath(), 'native/bin/notch-info');
+      const { stdout } = await promisify(execFile)(helper, [], { timeout: 5000, maxBuffer: 65536 });
+      nativeDisplays = parseNativeDisplays(stdout);
+    } catch {
+      nativeDisplays = [];
+    }
+  }
+  positionNotch();
+  publish();
 }
 function applyNotch() {
   if (!settings.notchEnabled) {
     notch?.close();
     notch = null;
+    notchExpanded = false;
+    positionNotch();
     return;
   }
   if (!notch || notch.isDestroyed()) notch = createWindow('notch');
@@ -229,7 +250,7 @@ function menu() {
     { label: 'Refresh usage', click: collect },
     { type: 'separator' },
     {
-      label: 'Show top-edge widget',
+      label: 'Show notch / top-edge widget',
       type: 'checkbox',
       checked: settings.notchEnabled,
       click: async (item) => {
@@ -265,7 +286,8 @@ function registerIPC() {
   handle('dashboard:show', () => showDashboard());
   handle('notch:expand', (expanded: unknown) => {
     if (typeof expanded !== 'boolean') throw new Error('Invalid widget state.');
-    positionNotch(expanded);
+    notchExpanded = expanded;
+    positionNotch();
   });
   handle('settings:update', async (patch: unknown) => {
     const next = validateSettings(patch, settings);
@@ -432,8 +454,10 @@ void app.whenReady().then(async () => {
     };
     publish();
   });
-  screen.on('display-metrics-changed', () => positionNotch());
-  screen.on('display-added', () => positionNotch());
+  screen.on('display-metrics-changed', () => void readDisplays());
+  screen.on('display-added', () => void readDisplays());
+  screen.on('display-removed', () => void readDisplays());
+  await readDisplays();
   applyNotch();
   collect();
   schedule();

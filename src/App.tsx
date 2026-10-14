@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import {
   Activity,
   ArrowDownToLine,
@@ -11,7 +11,6 @@ import {
   Cpu,
   FolderOpen,
   LayoutDashboard,
-  Leaf,
   LoaderCircle,
   LockKeyhole,
   RefreshCw,
@@ -44,6 +43,7 @@ import {
 } from './shared/format';
 import { demoSnapshot } from './demo';
 import SettingsView from './SettingsView';
+import BrandMark from './BrandMark';
 
 type View = 'overview' | 'sessions' | 'insights' | 'settings';
 const surface = new URLSearchParams(location.search).get('surface') ?? 'dashboard';
@@ -371,40 +371,66 @@ function CompactView({
   showDashboard: () => void;
 }) {
   const [expanded, setExpanded] = useState(false);
+  const collapseTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isNotch = surface === 'notch';
+  const widget = snapshot.widget;
+  const wrapsCamera = widget?.placement === 'notch';
   const changeExpanded = (value: boolean) => {
+    if (collapseTimer.current) clearTimeout(collapseTimer.current);
     setExpanded(value);
     void window.tokenCal?.setNotchExpanded(value);
   };
+  useEffect(
+    () => () => {
+      if (collapseTimer.current) clearTimeout(collapseTimer.current);
+    },
+    [],
+  );
   const active = snapshot.sessions.filter((s) => s.status === 'working');
+  const recent = active[0] ?? snapshot.sessions[0];
+  const stripHeight = wrapsCamera ? widget.collapsed.height : 46;
+  const style = {
+    '--camera-width': `${widget?.cameraWidth ?? 0}px`,
+    '--strip-height': `${stripHeight}px`,
+    '--wing-width': `${widget?.wingWidth ?? 112}px`,
+  } as CSSProperties;
   return (
     <div
-      className={`compact-shell ${isNotch ? 'notch-shell' : ''} ${expanded ? 'expanded' : ''}`}
+      className={`compact-shell ${isNotch ? 'notch-shell' : ''} ${wrapsCamera ? 'camera-layout' : ''} ${expanded ? 'expanded' : ''}`}
+      style={style}
       onMouseEnter={() => isNotch && changeExpanded(true)}
-      onMouseLeave={() => isNotch && changeExpanded(false)}
+      onMouseLeave={() => {
+        if (isNotch) collapseTimer.current = setTimeout(() => changeExpanded(false), 250);
+      }}
     >
       {isNotch && (
         <button
           className="notch-strip"
           onClick={() => changeExpanded(!expanded)}
-          aria-label="Expand TokenCal widget"
+          aria-label={expanded ? 'Collapse TokenCal widget' : 'Expand TokenCal widget'}
         >
-          <span>
-            <Leaf size={16} />
-            TokenCal
+          <span className="notch-left" title="Today’s estimated API value">
+            <BrandMark size={20} />
+            <strong>{money(snapshot.totals.today.cost)}</strong>
           </span>
-          <span>
-            <i className="live-dot" />
-            {active.length} active
+          {wrapsCamera && <span className="camera-spacer" aria-hidden="true" />}
+          <span
+            className="notch-right"
+            title={
+              recent ? `${recent.project} · ${active.length} active sessions` : 'No sessions yet'
+            }
+          >
+            <i className={`live-dot ${active.length ? 'busy' : ''}`} />
+            <strong>{recent ? duration(recent.activeMs) : 'Ready'}</strong>
+            {!wrapsCamera && <small>{active.length} active</small>}
           </span>
-          <strong>{money(snapshot.totals.today.cost)}</strong>
         </button>
       )}
       {(!isNotch || expanded) && (
         <div className="compact-content">
           <div className="compact-header">
             <div className="wordmark">
-              <Leaf size={22} />
+              <BrandMark size={22} />
               TokenCal
             </div>
             <button
@@ -512,7 +538,7 @@ export default function App() {
   if (!data)
     return (
       <div className="loading-screen">
-        <Leaf size={36} />
+        <BrandMark size={36} />
         <h2>TokenCal</h2>
         <p>{error || 'Reading your local usage…'}</p>
         <LoaderCircle className="spin" size={20} />
@@ -547,7 +573,7 @@ export default function App() {
       <aside className="sidebar">
         <div className="wordmark">
           <span className="brand-icon">
-            <Leaf size={23} />
+            <BrandMark size={23} />
           </span>
           TokenCal
         </div>
@@ -714,7 +740,7 @@ export default function App() {
                   <p>Calculated from tokens at published API rates.</p>
                   <div className="hero-foot">
                     <span className="saved-badge">
-                      <Leaf size={13} /> {money(total.cacheSavings)} saved by caching
+                      <BrandMark size={13} /> {money(total.cacheSavings)} saved by caching
                     </span>
                   </div>
                 </div>
@@ -854,7 +880,7 @@ export default function App() {
         </div>
         <footer className="page-footer">
           <span>
-            <Leaf size={13} /> Thoughtfully local. Always open.
+            <BrandMark size={13} /> Every token. In view.
           </span>
           <span>Prices verified {data.pricingUpdatedAt}</span>
         </footer>

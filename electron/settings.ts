@@ -8,7 +8,9 @@ export function defaultSettings(home = os.homedir(), platform = process.platform
     process.env.CLAUDE_CONFIG_DIR ||
     (existsSync(path.join(home, '.claude'))
       ? path.join(home, '.claude')
-      : path.join(home, '.config', 'claude'));
+      : existsSync(path.join(home, '.config', 'claude'))
+        ? path.join(home, '.config', 'claude')
+        : path.join(home, '.claude'));
   const codexDir = process.env.CODEX_HOME || path.join(home, '.codex');
   const support =
     platform === 'darwin'
@@ -24,6 +26,8 @@ export function defaultSettings(home = os.homedir(), platform = process.platform
     retentionDays: 90,
     launchAtLogin: false,
     notchEnabled: false,
+    widgetMode: 'auto',
+    autoDetectSources: true,
     trayCost: true,
     notifications: false,
     dailyBudget: 0,
@@ -37,6 +41,7 @@ const boolKeys = [
   'notchEnabled',
   'trayCost',
   'notifications',
+  'autoDetectSources',
 ] as const;
 const pathKeys = ['claudePath', 'codexPath', 'claudeHistoryPath'] as const;
 export function validateSettings(patch: unknown, current: Settings): Settings {
@@ -59,6 +64,11 @@ export function validateSettings(patch: unknown, current: Settings): Settings {
         throw new Error('Choose an absolute local path.');
       result[key] = p[key] as string;
     }
+  if ('widgetMode' in p) {
+    if (!['auto', 'notch', 'edge'].includes(String(p.widgetMode)))
+      throw new Error('Invalid widget placement.');
+    result.widgetMode = p.widgetMode as Settings['widgetMode'];
+  }
   for (const [key, min, max] of [
     ['pollSeconds', 5, 300],
     ['retentionDays', 7, 365],

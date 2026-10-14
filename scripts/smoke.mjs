@@ -4,12 +4,12 @@ import os from 'node:os';
 import path from 'node:path';
 const root = await fs.mkdtemp(path.join(os.tmpdir(), 'tokencal-desktop-'));
 const now = Date.now();
-await fs.mkdir(path.join(root, 'sessions'));
-await fs.mkdir(path.join(root, 'claude'));
+await fs.mkdir(path.join(root, '.codex', 'sessions'), { recursive: true });
+await fs.mkdir(path.join(root, '.claude', 'projects'), { recursive: true });
 const log = (type, payload, at = now) =>
   JSON.stringify({ timestamp: new Date(at).toISOString(), type, payload });
 await fs.writeFile(
-  path.join(root, 'sessions', 'sample.jsonl'),
+  path.join(root, '.codex', 'sessions', 'sample.jsonl'),
   [
     log('session_meta', { id: 'fixture', cwd: '/sample/=SAMPLE' }, now - 180000),
     log('turn_context', { model: 'gpt-6.1-sol' }, now - 180000),
@@ -34,18 +34,26 @@ await fs.writeFile(
     }),
   ].join('\n') + '\n',
 );
+const support =
+  process.platform === 'darwin'
+    ? path.join(root, 'Library', 'Application Support')
+    : path.join(root, 'AppData', 'Roaming');
+await fs.mkdir(path.join(support, 'Claude'), { recursive: true });
 await fs.writeFile(
-  path.join(root, 'history.json'),
+  path.join(support, 'Claude', 'plan-usage-history.json'),
   JSON.stringify({ version: 2, samples: [{ t: now, org: 'fixture', u: { fh: 18, sd: 51 } }] }),
 );
-const config = {
-  claudePath: path.join(root, 'claude'),
-  codexPath: path.join(root, 'sessions'),
-  claudeHistoryPath: path.join(root, 'history.json'),
-};
 await fs.mkdir(path.join(root, 'data'));
-await fs.writeFile(path.join(root, 'data', 'settings.json'), JSON.stringify(config));
-const env = { ...process.env, TOKENCAL_DATA_DIR: path.join(root, 'data') };
+// First launch: no settings file and no folder picker. Only synthetic agent logs exist.
+const env = {
+  ...process.env,
+  HOME: root,
+  USERPROFILE: root,
+  APPDATA: support,
+  CLAUDE_CONFIG_DIR: path.join(root, '.claude'),
+  CODEX_HOME: path.join(root, '.codex'),
+  TOKENCAL_DATA_DIR: path.join(root, 'data'),
+};
 delete env.ELECTRON_RUN_AS_NODE;
 delete env.TOKENCAL_DEV_URL;
 let application;
@@ -54,7 +62,7 @@ try {
     args: process.env.TOKENCAL_TEST_EXECUTABLE ? [] : ['.'],
     executablePath: process.env.TOKENCAL_TEST_EXECUTABLE,
     env,
-    timeout: 30000,
+    timeout: 60000,
   });
   const page = await application.firstWindow();
   const errors = [];
@@ -84,18 +92,44 @@ try {
   await page.getByRole('button', { name: 'Insights', exact: true }).click();
   await expect(page.getByText('By model', { exact: true })).toBeVisible();
   await page.getByRole('button', { name: 'Settings', exact: true }).click();
-  await page.getByRole('switch', { name: 'Show top-edge widget' }).click();
-  await expect(page.getByRole('switch', { name: 'Show top-edge widget' })).toHaveAttribute(
+  await page.getByRole('switch', { name: 'Show notch / top-edge widget' }).click();
+  await expect(page.getByRole('switch', { name: 'Show notch / top-edge widget' })).toHaveAttribute(
     'aria-checked',
     'true',
   );
   await expect.poll(() => application.windows().length).toBe(2);
   const widget = application.windows().find((w) => w !== page);
+  await fs.mkdir('.cache/screenshots', { recursive: true });
+  await expect(widget.getByRole('button', { name: 'Expand TokenCal widget' })).toBeVisible();
+  await widget.screenshot({ path: '.cache/screenshots/notch-collapsed.png' });
+  const geometry = await page.evaluate(async () => (await window.tokenCal.getSnapshot()).widget);
+  if (process.env.TOKENCAL_EXPECT_NOTCH === 'true') expect(geometry.placement).toBe('notch');
+  const bounds = await application.evaluate(({ BrowserWindow }) =>
+    BrowserWindow.getAllWindows()
+      .find((w) => w.webContents.getURL().includes('surface=notch'))
+      .getBounds(),
+  );
+  expect(bounds).toEqual(geometry.collapsed);
   // Activate the explicit widget button. CDP hover can lose its target when
   // a floating native window resizes, particularly under Rosetta.
   await widget.getByRole('button', { name: 'Expand TokenCal widget' }).dispatchEvent('click');
   await expect(widget.getByRole('button', { name: 'Open dashboard', exact: true })).toBeVisible();
-  await page.getByRole('switch', { name: 'Show top-edge widget' }).click();
+  if (geometry.placement === 'notch') {
+    const clear = await widget.evaluate(() => {
+      const camera = document.querySelector('.camera-spacer').getBoundingClientRect();
+      const left = document.querySelector('.notch-left strong').getBoundingClientRect();
+      const right = document.querySelector('.notch-right strong').getBoundingClientRect();
+      return left.right <= camera.left && right.left >= camera.right;
+    });
+    expect(clear).toBe(true);
+  }
+  await widget.screenshot({ path: '.cache/screenshots/notch-expanded.png' });
+  await page.getByRole('combobox', { name: 'Widget placement' }).selectOption('edge');
+  await expect
+    .poll(() => page.evaluate(async () => (await window.tokenCal.getSnapshot()).widget.placement))
+    .toBe('edge');
+  await page.getByRole('combobox', { name: 'Widget placement' }).selectOption('auto');
+  await page.getByRole('switch', { name: 'Show notch / top-edge widget' }).click();
   await expect.poll(() => application.windows().length).toBe(1);
   await page.getByRole('switch', { name: 'Show cost in the menu bar' }).click();
   await expect(page.getByRole('switch', { name: 'Show cost in the menu bar' })).toHaveAttribute(

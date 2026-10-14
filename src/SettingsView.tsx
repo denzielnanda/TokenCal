@@ -115,9 +115,28 @@ export default function SettingsView({
         )}
         {toggle(
           'notchEnabled',
-          'Show top-edge widget',
-          'A compact panel at the top of your primary screen. Hover to expand.',
+          'Show notch / top-edge widget',
+          'Keep cost and session time beside your MacBook’s camera. Hover for usage and resets.',
         )}
+        <div className="setting-row">
+          <div>
+            <strong>Widget placement</strong>
+            <p>
+              {snapshot.widget?.note ??
+                'Automatically fits a MacBook notch, or uses a top-edge panel.'}
+            </p>
+          </div>
+          <select
+            aria-label="Widget placement"
+            disabled={demo || busy}
+            value={settings.widgetMode}
+            onChange={(e) => save({ widgetMode: e.target.value as Settings['widgetMode'] })}
+          >
+            <option value="auto">Automatic</option>
+            <option value="notch">MacBook notch</option>
+            <option value="edge">Top-edge panel</option>
+          </select>
+        </div>
         {toggle(
           'trayCost',
           'Show cost in the menu bar',
@@ -197,6 +216,11 @@ export default function SettingsView({
         <h3>Local data sources</h3>
         <p>TokenCal reads usage metadata. It never reads your sign-in credentials.</p>
         {toggle(
+          'autoDetectSources',
+          'Find sessions automatically',
+          'Detect native folders, custom agent homes, and running WSL distributions. No setup needed.',
+        )}
+        {toggle(
           'claudeEnabled',
           'Track Claude Code',
           'Read token counts and model names from Claude Code transcripts.',
@@ -206,44 +230,51 @@ export default function SettingsView({
           'Track Codex',
           'Read local rollouts, archived sessions, and recorded usage limits.',
         )}
-        <div className="source-list">
-          {snapshot.sources.map((source) => (
-            <div className="source-row" key={source.id}>
-              <div>
+        <details className="source-advanced">
+          <summary>Source details and optional folder overrides</summary>
+          <div className="source-list">
+            {snapshot.sources.map((source) => (
+              <div className="source-row" key={source.id}>
                 <div>
-                  <strong>{source.label}</strong>
-                  <span className={`source-state ${source.state}`}>
-                    {source.state === 'ready' ? <Check size={11} /> : null}
-                    {source.state}
-                  </span>
+                  <div>
+                    <strong>{source.label}</strong>
+                    <span className={`source-state ${source.state}`}>
+                      {source.state === 'ready' ? <Check size={11} /> : null}
+                      {source.state}
+                    </span>
+                  </div>
+                  <code>{source.path}</code>
+                  <small>
+                    {source.message ??
+                      `${source.files} ${source.id === 'claude-history' ? 'usage history file' : 'session files'}`}
+                  </small>
                 </div>
-                <code>{source.path}</code>
-                <small>
-                  {source.message ??
-                    `${source.files} ${source.id === 'claude-history' ? 'usage history file' : 'session files'}`}
-                </small>
+                <button
+                  className="icon-button"
+                  aria-label={`Choose ${source.label} path`}
+                  disabled={demo || busy}
+                  onClick={() =>
+                    choose(
+                      source.id === 'claude-history'
+                        ? 'history'
+                        : source.id.startsWith('claude')
+                          ? 'claude'
+                          : 'codex',
+                    )
+                  }
+                >
+                  <FolderOpen size={18} />
+                </button>
               </div>
-              <button
-                className="icon-button"
-                aria-label={`Choose ${source.label} path`}
-                disabled={demo || busy}
-                onClick={() =>
-                  choose(
-                    source.id === 'claude-history' ? 'history' : (source.id as 'claude' | 'codex'),
-                  )
-                }
-              >
-                <FolderOpen size={18} />
-              </button>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        </details>
         <div className="settings-info">
           <Info size={16} />
           <p>
-            On Windows, choose a WSL session folder if your agents run inside WSL. Claude plan
-            percentages require Claude desktop’s local usage history. Limits cover the account that
-            wrote each local reading.
+            Start a coding session and it will appear automatically. On Windows, running WSL
+            distributions are detected too. Claude plan percentages require Claude desktop’s local
+            usage history. Limits cover the account that wrote each local reading.
           </p>
         </div>
       </section>

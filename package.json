@@ -1,6 +1,6 @@
 {
   "name": "tokencal",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "description": "Local-first token costs and usage limits in your menu bar.",
   "author": "TokenCal contributors",
@@ -16,7 +16,8 @@
     "check": "npm run test && npm run build",
     "dist:mac": "npm run build && node scripts/package-mac.mjs",
     "dist:win": "npm run build && electron-builder --win nsis zip --x64 --arm64",
-    "dist:dir": "npm run build && electron-builder --dir"
+    "dist:dir": "npm run build && electron-builder --dir",
+    "icons": "node scripts/generate-icons.mjs"
   },
   "overrides": {
     "global-agent": "^4.1.3"
@@ -35,6 +36,7 @@
     "electron": "^44.7.2",
     "electron-builder": "^26.15.3",
     "esbuild": "^0.28.2",
+    "sharp": "^0.35.5",
     "typescript": "^7.0.2",
     "vite": "^8.3.4",
     "vitest": "^5.0.4"
@@ -81,7 +83,14 @@
       "extendInfo": {
         "LSUIElement": true
       },
-      "artifactName": "TokenCal-${version}-mac-${arch}.${ext}"
+      "artifactName": "TokenCal-${version}-mac-${arch}.${ext}",
+      "minimumSystemVersion": "14.0",
+      "extraResources": [
+        {
+          "from": "native/bin/notch-info",
+          "to": "notch-info"
+        }
+      ]
     },
     "win": {
       "target": [
@@ -104,13 +113,14 @@
       "artifactName": "TokenCal-${version}-windows-${arch}.${ext}"
     },
     "nsis": {
-      "oneClick": false,
-      "allowToChangeInstallationDirectory": true,
-      "perMachine": false
+      "oneClick": true,
+      "perMachine": false,
+      "runAfterFinish": true,
+      "artifactName": "TokenCal-${version}-windows-setup.${ext}"
     },
     "dmg": {
       "title": "TokenCal ${version}",
-      "backgroundColor": "#f6f7f3"
+      "backgroundColor": "#171a21"
     }
   },
   "engines": {

@@ -13,6 +13,8 @@ export function demoSnapshot(): Snapshot {
     retentionDays: 90,
     launchAtLogin: false,
     notchEnabled: false,
+    widgetMode: 'auto',
+    autoDetectSources: true,
     trayCost: true,
     notifications: false,
     dailyBudget: 25,
@@ -140,7 +142,7 @@ export function demoSnapshot(): Snapshot {
     unpricedTokens: 0,
   };
   return {
-    version: '0.1.0',
+    version: '0.2.0',
     collectedAt: now,
     scanning: false,
     demo: true,

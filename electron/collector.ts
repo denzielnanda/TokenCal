@@ -6,6 +6,7 @@ import type { Provider, Settings, SourceStatus, Snapshot } from '../src/shared/t
 import { consumeLine, initialState, type FileState } from './parser';
 import { claudeHistoryLimits } from './limits';
 import { buildSnapshot } from './summary';
+import { discoverSources } from './discovery';
 
 interface Checkpoint {
   offset: number;
@@ -28,11 +29,12 @@ export class Collector {
   private loaded = false;
   constructor(private cachePath?: string) {}
   async scan(settings: Settings, now = Date.now()): Promise<Snapshot> {
+    const roots = await discoverSources(settings);
     const config = JSON.stringify([
       settings.claudeEnabled,
       settings.codexEnabled,
-      settings.claudePath,
-      settings.codexPath,
+      roots.claude,
+      roots.codex,
       settings.retentionDays,
     ]);
     if (!this.loaded) {
@@ -65,11 +67,14 @@ export class Collector {
       states: FileState[] = [];
     const seen = new Set<string>();
     const cutoff = now - settings.retentionDays * 86_400_000;
-    for (const provider of ['claude', 'codex'] as Provider[]) {
-      const root = settings[`${provider}Path`];
+    for (const { provider, root, index } of (['claude', 'codex'] as Provider[]).flatMap(
+      (provider) => roots[provider].map((root, index) => ({ provider, root, index })),
+    )) {
       const source: SourceStatus = {
-        id: provider,
-        label: provider === 'claude' ? 'Claude Code sessions' : 'Codex sessions',
+        id: index ? `${provider}-${index}` : provider,
+        label:
+          (provider === 'claude' ? 'Claude Code sessions' : 'Codex sessions') +
+          (root.startsWith('\\\\wsl.') ? ' · WSL' : ''),
         path: root,
         state: settings[`${provider}Enabled`] ? 'ready' : 'disabled',
         files: 0,
@@ -166,19 +171,20 @@ export class Collector {
         changed = true;
       }
     let history: unknown = null;
+    const historyPath = roots.history[0];
     const historySource: SourceStatus = {
       id: 'claude-history',
       label: 'Claude desktop limits',
-      path: settings.claudeHistoryPath,
+      path: historyPath,
       state: settings.claudeEnabled ? 'ready' : 'disabled',
       files: 0,
     };
     sources.push(historySource);
     if (settings.claudeEnabled)
       try {
-        const stat = await fs.stat(settings.claudeHistoryPath);
+        const stat = await fs.stat(historyPath);
         if (stat.size > 4 * 1024 * 1024) throw new Error('History too large');
-        history = JSON.parse(await fs.readFile(settings.claudeHistoryPath, 'utf8'));
+        history = JSON.parse(await fs.readFile(historyPath, 'utf8'));
         historySource.files = 1;
       } catch (e) {
         historySource.state = (e as NodeJS.ErrnoException).code === 'ENOENT' ? 'missing' : 'error';

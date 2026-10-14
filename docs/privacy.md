@@ -4,7 +4,9 @@ TokenCal has no account, analytics, crash-upload service, update checker, or bac
 
 ## Reads
 
-Only configured Claude Code JSONL sessions, Codex JSONL sessions and adjacent archives, and Claude desktop usage history are scanned. Source logs are opened read-only. A source switched off is not read; its records are removed from the next saved cache. Symlinks are not followed.
+Only Claude Code JSONL sessions, Codex JSONL sessions and adjacent archives, and Claude desktop usage history are scanned. Automatic discovery checks standard, environment-configured, and legacy locations. On Windows, it lists running WSL distributions and their default user homes; it does not start stopped distributions or open an interactive shell. Detection can be disabled and folders chosen explicitly in Settings. Source logs are opened read-only. Disabled providers contribute no records; their records are removed from the next saved cache. Session file symlinks are not followed.
+
+On Mac, the bundled display helper reads screen dimensions and the camera cutout using public AppKit APIs. No screen pixels, camera, microphone, or accessibility data are captured. Widget coordinates are kept in memory and sent only to TokenCal's own interface.
 
 Transcript lines may be decoded transiently in worker memory to extract usage. Prompt and response bodies, tool results, and code are not retained, rendered, exported, or uploaded.
 

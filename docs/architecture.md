@@ -19,7 +19,9 @@ Read-only local files
 
 `src/App.tsx` renders overview, sessions, insights, and compact surfaces. `src/SettingsView.tsx` handles local source paths, preferences, and price overrides. No renderer has direct filesystem or process access. Demo data lives in `src/demo.ts` and is never fed into the real collector.
 
-Electron is chosen for one macOS/Windows implementation and native tray integration. It costs more memory than a Swift-only app. The top-edge widget is a frameless, always-on-top window centered on the primary screen, below the reserved menu area so the camera cutout cannot hide its text; it does not rely on private macOS notch APIs.
+Electron is chosen for one macOS/Windows implementation and native tray integration. It costs more memory than a Swift-only app. The widget is a frameless, always-on-top window. `native/NotchInfo.swift` queries the public `NSScreen.safeAreaInsets` and auxiliary top-area APIs. The bundled universal helper reports camera geometry in desktop coordinates; text sits in two wings beside the cutout and details expand underneath. A notched MacBook is selected even if an external display is primary. Top-edge mode and non-notched displays use the primary display’s reserved work area. No private APIs or accessibility permission are used.
+
+`electron/discovery.ts` rechecks canonical, environment-configured, and legacy sources on each scan, so installing an agent after TokenCal starts needs no setup. On Windows, running WSL distributions are queried at most once per minute with argument arrays, without shells or starting stopped distributions. Settings can disable detection and use explicitly selected folders. Installers contain the app and helper; build tools are developer-only dependencies.
 
 ## Checks
 

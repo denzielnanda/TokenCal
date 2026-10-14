@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.2.0 — 2026-10-14
+
+- Real MacBook notch layout using public Apple display APIs, automatic cutout detection, external-monitor support, and selectable placement in Settings.
+- Graphite and electric blue branding with a custom shared TC mark for app, tray, and interface.
+- Automatic native, custom-home, legacy Claude, and running WSL log discovery; folder overrides are optional.
+- First-launch desktop checks with no configuration file, plus notch geometry regression coverage.
+- One-click Windows installation and download-first documentation separating full source code from ready-to-use releases.
+
 ## 0.1.0 — 2026-10-14
 
 - macOS menu bar and Windows system tray app with an optional top-edge widget.

@@ -17,6 +17,7 @@ beforeEach(async () => {
   root = await fs.mkdtemp(path.join(os.tmpdir(), 'tokencal-test-'));
   settings = {
     ...defaultSettings(root),
+    autoDetectSources: false,
     claudePath: path.join(root, 'claude'),
     codexPath: path.join(root, 'sessions'),
     claudeHistoryPath: path.join(root, 'history.json'),

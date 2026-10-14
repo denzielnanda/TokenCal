@@ -1,4 +1,5 @@
 import { build } from 'esbuild';
+await import('./build-native.mjs');
 await build({
   entryPoints: {
     main: 'electron/main.ts',

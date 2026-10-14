@@ -1,5 +1,17 @@
 export type Provider = 'claude' | 'codex';
 export type Period = 'today' | 'week' | 'month';
+export type WidgetMode = 'auto' | 'notch' | 'edge';
+export interface WidgetGeometry {
+  placement: 'notch' | 'edge';
+  displayId: number;
+  hasNotch: boolean;
+  cameraWidth: number;
+  cameraHeight: number;
+  wingWidth: number;
+  collapsed: { x: number; y: number; width: number; height: number };
+  expanded: { x: number; y: number; width: number; height: number };
+  note: string;
+}
 export interface Tokens {
   input: number;
   cached: number;
@@ -108,6 +120,8 @@ export interface Settings {
   retentionDays: number;
   launchAtLogin: boolean;
   notchEnabled: boolean;
+  widgetMode: WidgetMode;
+  autoDetectSources: boolean;
   trayCost: boolean;
   notifications: boolean;
   dailyBudget: number;
@@ -130,6 +144,7 @@ export interface Snapshot {
   prices: Record<string, Price>;
   unknownModels: string[];
   warnings: string[];
+  widget?: WidgetGeometry;
 }
 export interface TokenCalAPI {
   getSnapshot(): Promise<Snapshot>;
