@@ -50,7 +50,7 @@ Claude desktop history supports version 1 (percentages next to `t`) and version 
 
 The percentages are provider-recorded. The history contains **no official reset timestamp**. TokenCal uses the most recent percentage drop as an estimated renewal anchor, and a first positive sample after zero as a five-hour anchor when available. The later sample in that bracket is conservative; missed readings can make estimates substantially late. Each inferred reset is explicitly marked `~`. Without an anchor, the UI says the reset is unavailable. It never rolls an old reading forward to pretend that it is current.
 
-Readings older than 20 minutes are visibly stale; expired windows are shown as awaiting fresh data. Opening Claude desktop may update the history, depending on the desktop version. Cost and session tracking work independently of this file.
+Readings older than 20 minutes are visibly stale; expired windows are shown as awaiting fresh data. Keeping Claude's main window open does not guarantee history updates. The desktop app's usage sampler can pause when its menu-bar/tray panel has not been opened recently. Opening that panel requests a fresh reading when the sampler is enabled. The installed 2.37337.1 Mac app and its diagnostic log confirmed a 24-hour recent-panel requirement on this machine; that threshold is controlled by Claude and can vary. TokenCal shows the saved observation time rather than assuming the app is closed. Cost and session tracking work independently of this file.
 
 ## Coverage
 

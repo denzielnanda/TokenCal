@@ -20,7 +20,7 @@ export function claudeHistoryLimits(data: unknown, now: number): ProviderLimits 
     .sort((a, b) => a.t - b.t);
   const latest = samples.at(-1);
   if (!latest) {
-    result.note = 'Open Claude desktop to record your plan usage.';
+    result.note = 'No saved Claude plan readings yet. Claude Code session tracking still works.';
     return result;
   }
   const history = samples.filter((x) => x.org === latest.org);
@@ -71,9 +71,13 @@ export function claudeHistoryLimits(data: unknown, now: number): ProviderLimits 
       ),
     );
   }
-  if (now - timestamp(latest.t) > DAY)
-    result.note = 'Claude desktop history is over a day old. Open Claude desktop to update it.';
-  else
+  if (now - timestamp(latest.t) > DAY) {
+    const saved = new Date(timestamp(latest.t)).toLocaleString(undefined, {
+      dateStyle: 'medium',
+      timeStyle: 'short',
+    });
+    result.note = `Claude last saved plan usage on ${saved}. Try its menu-bar/tray panel for a fresh reading. Claude Code sessions still update.`;
+  } else
     result.note =
       'Percentages come from Claude desktop. Resets inferred from usage drops are estimates.';
   return result;

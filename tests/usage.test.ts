@@ -205,6 +205,18 @@ describe('pricing', () => {
   });
 });
 describe('quota observations', () => {
+  it('explains stale Claude history without claiming that opening the app refreshes it', () => {
+    const reading = at - 26 * 3600000;
+    const limits = claudeHistoryLimits(
+      { version: 2, samples: [{ t: reading, org: 'A', u: { fh: 20, sd: 30 } }] },
+      at,
+    );
+    expect(limits.note).toContain('Claude last saved plan usage on');
+    expect(limits.note).toContain('menu-bar/tray panel');
+    expect(limits.note).toContain('Claude Code sessions still update');
+    expect(limits.windows[0]).toMatchObject({ observedAt: reading, usedPercent: 20, stale: true });
+    expect(limits.note).not.toContain('Open Claude desktop');
+  });
   it('does not invent a weekly reset without a drop in Claude history', () => {
     const l = claudeHistoryLimits(
       { version: 2, samples: [{ t: at - 60000, org: 'A', u: { fh: 20, sd: 30 } }] },

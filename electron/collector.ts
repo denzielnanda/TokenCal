@@ -188,7 +188,8 @@ export class Collector {
         historySource.files = 1;
       } catch (e) {
         historySource.state = (e as NodeJS.ErrnoException).code === 'ENOENT' ? 'missing' : 'error';
-        historySource.message = 'Open Claude desktop to make local plan usage available.';
+        historySource.message =
+          'No readable local Claude plan history. Claude Code session tracking still works.';
       }
     const malformed = states.reduce((n, s) => n + s.malformed, 0);
     if (malformed) warnings.push(`${malformed} malformed or oversized log lines were skipped.`);
