@@ -14,7 +14,7 @@
     "test:watch": "vitest",
     "test:desktop": "node scripts/smoke.mjs",
     "check": "npm run test && npm run build",
-    "dist:mac": "npm run build && electron-builder --mac dmg zip --arm64 --x64",
+    "dist:mac": "npm run build && node scripts/package-mac.mjs",
     "dist:win": "npm run build && electron-builder --win nsis zip --x64 --arm64",
     "dist:dir": "npm run build && electron-builder --dir"
   },
@@ -50,7 +50,8 @@
       "dist/**/*",
       "dist-electron/**/*",
       "assets/**/*",
-      "package.json"
+      "package.json",
+      "LICENSE"
     ],
     "asar": true,
     "afterPack": "scripts/after-pack.cjs",

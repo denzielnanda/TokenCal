@@ -29,6 +29,8 @@ npm run dist:win
 
 Each command builds its platform's x64 and ARM64 installers and ZIP archives. Build on the matching host OS for signing and realistic installation testing. The application has no native npm modules, allowing an unsigned Windows ZIP to be cross-packaged for inspection if useful, but cross-packaging does not validate Windows runtime behavior.
 
+macOS packaging signs in a private temporary directory to prevent Finder/cloud metadata from being reapplied during signing, then copies the finished archives into `release/`. Use `npm run dist:mac -- --keep-unpacked --config.mac.identity=-` for a local ad-hoc build with unpacked apps retained for testing. Their location is saved in ignored `.cache/mac-build.json`. For a packaged smoke check, set `TOKENCAL_TEST_EXECUTABLE` to the app's `Contents/MacOS/TokenCal` executable and run `npm run test:desktop`.
+
 `npm run dist:dir` builds the host architecture's unpacked application for a quick installation smoke check.
 
 ## Public repository readiness

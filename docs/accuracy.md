@@ -20,7 +20,7 @@ Claude rates follow [Anthropic's official pricing table](https://platform.claude
 
 Newer rollouts provide `token_usage_record.payload.usage`, keyed by response ID. The fallback for older versions uses changed cumulative totals and `last_token_usage` when available. Repeated totals do not add spend. Once response records appear, cumulative events do not also add spend. If old totals decrease after compaction, the new baseline is accepted; tokens are never subtracted from previously recorded work.
 
-Codex `input_tokens` includes cached and cache-written input. TokenCal subtracts those categories before pricing normal input. Reasoning output is contained in output; it is never counted twice. Forked or copied logs with the same response ID are deduplicated globally. Legacy logs without response IDs offer weaker deduplication, based on session ID and cumulative total.
+Codex `input_tokens` includes cached and cache-written input. TokenCal subtracts those categories before pricing normal input. Reasoning output is contained in output; it is never counted twice. Forked or copied logs with the same response ID are deduplicated globally. Legacy logs without response IDs offer weaker deduplication, based on session ID, timestamp, and cumulative total; a reused total after compaction remains a distinct response.
 
 Official price sources:
 

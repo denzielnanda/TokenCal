@@ -18,7 +18,7 @@ TokenCal is a free, open-source desktop companion for **Claude Code** and **Code
 
 ## Run from source
 
-Use **Node.js 24 LTS** and npm on macOS or Windows. macOS packaging also needs Xcode Command Line Tools, which provide the system Python used to prepare generated bundles for signing.
+Use **Node.js 24 LTS** and npm on macOS or Windows. macOS signing also needs Xcode Command Line Tools.
 
 ```sh
 npm ci
@@ -26,6 +26,8 @@ npm run dev
 ```
 
 TokenCal opens the dashboard and puts an icon in your menu bar or tray. Start a Claude Code or Codex session to see your usage. The first scan of a large history can take a few seconds; later scans process only changed files.
+
+Current build validation and signing status are recorded in [validation](docs/validation.md).
 
 Click the tray icon for the quick panel. Right-click it to open the dashboard, refresh, toggle the widget, or quit. Closing the dashboard leaves the tray app running. Enable the top-edge widget or launch at login in **Settings**.
 

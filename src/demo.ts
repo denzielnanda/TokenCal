@@ -1,17 +1,291 @@
 import type { Snapshot, Session, Settings } from './shared/types';
 import { PRICES, PRICING_UPDATED, zeroTokens } from './shared/pricing';
 
-export function demoSnapshot():Snapshot {
-  const now=Date.now();
-  const settings:Settings={claudeEnabled:true,codexEnabled:true,claudePath:'~/.claude/projects',codexPath:'~/.codex/sessions',claudeHistoryPath:'~/Library/Application Support/Claude/plan-usage-history.json',pollSeconds:10,retentionDays:90,launchAtLogin:false,notchEnabled:false,trayCost:true,notifications:false,dailyBudget:25,priceOverrides:{}};
-  const sessions:Session[]=[
-    {id:'demo-1',provider:'claude',project:'tokencal',model:'claude-opus-5',models:['claude-opus-5'],startedAt:now-38*60000,lastActivity:now,activeMs:32*60000,elapsedMs:38*60000,status:'working',tokens:{input:52000,cached:1042000,cacheWrite:96000,cacheWriteLong:0,output:26200,reasoning:6200},cost:2.04,unpricedTokens:0,responses:34},
-    {id:'demo-2',provider:'codex',project:'portfolio',model:'gpt-6.1-sol',models:['gpt-6.1-sol'],startedAt:now-80*60000,lastActivity:now-12*60000,activeMs:48*60000,elapsedMs:68*60000,status:'completed',tokens:{input:84000,cached:682000,cacheWrite:21000,cacheWriteLong:0,output:36000,reasoning:4200},cost:1.62,unpricedTokens:0,responses:42},
-    {id:'demo-3',provider:'claude',project:'api-service',model:'claude-sonnet-5',models:['claude-sonnet-5'],startedAt:now-140*60000,lastActivity:now-110*60000,activeMs:24*60000,elapsedMs:30*60000,status:'completed',tokens:{input:42000,cached:424000,cacheWrite:31000,cacheWriteLong:0,output:18000,reasoning:2300},cost:1.18,unpricedTokens:0,responses:24},
-    {id:'demo-4',provider:'codex',project:'design-system',model:'gpt-6.1-sol',models:['gpt-6.1-sol'],startedAt:now-220*60000,lastActivity:now-176*60000,activeMs:32*60000,elapsedMs:44*60000,status:'idle',tokens:{input:67000,cached:721000,cacheWrite:38000,cacheWriteLong:0,output:12000,reasoning:3600},cost:1.05,unpricedTokens:0,responses:31},
+export function demoSnapshot(): Snapshot {
+  const now = Date.now();
+  const settings: Settings = {
+    claudeEnabled: true,
+    codexEnabled: true,
+    claudePath: '~/.claude/projects',
+    codexPath: '~/.codex/sessions',
+    claudeHistoryPath: '~/Library/Application Support/Claude/plan-usage-history.json',
+    pollSeconds: 10,
+    retentionDays: 90,
+    launchAtLogin: false,
+    notchEnabled: false,
+    trayCost: true,
+    notifications: false,
+    dailyBudget: 25,
+    priceOverrides: {},
+  };
+  const sessions: Session[] = [
+    {
+      id: 'demo-1',
+      provider: 'claude',
+      project: 'tokencal',
+      model: 'claude-opus-5',
+      models: ['claude-opus-5'],
+      startedAt: now - 38 * 60000,
+      lastActivity: now,
+      activeMs: 32 * 60000,
+      elapsedMs: 38 * 60000,
+      status: 'working',
+      tokens: {
+        input: 52000,
+        cached: 1042000,
+        cacheWrite: 96000,
+        cacheWriteLong: 0,
+        output: 26200,
+        reasoning: 6200,
+      },
+      cost: 2.04,
+      unpricedTokens: 0,
+      responses: 34,
+    },
+    {
+      id: 'demo-2',
+      provider: 'codex',
+      project: 'portfolio',
+      model: 'gpt-6.1-sol',
+      models: ['gpt-6.1-sol'],
+      startedAt: now - 80 * 60000,
+      lastActivity: now - 12 * 60000,
+      activeMs: 48 * 60000,
+      elapsedMs: 68 * 60000,
+      status: 'completed',
+      tokens: {
+        input: 84000,
+        cached: 682000,
+        cacheWrite: 21000,
+        cacheWriteLong: 0,
+        output: 36000,
+        reasoning: 4200,
+      },
+      cost: 1.62,
+      unpricedTokens: 0,
+      responses: 42,
+    },
+    {
+      id: 'demo-3',
+      provider: 'claude',
+      project: 'api-service',
+      model: 'claude-sonnet-5',
+      models: ['claude-sonnet-5'],
+      startedAt: now - 140 * 60000,
+      lastActivity: now - 110 * 60000,
+      activeMs: 24 * 60000,
+      elapsedMs: 30 * 60000,
+      status: 'completed',
+      tokens: {
+        input: 42000,
+        cached: 424000,
+        cacheWrite: 31000,
+        cacheWriteLong: 0,
+        output: 18000,
+        reasoning: 2300,
+      },
+      cost: 1.18,
+      unpricedTokens: 0,
+      responses: 24,
+    },
+    {
+      id: 'demo-4',
+      provider: 'codex',
+      project: 'design-system',
+      model: 'gpt-6.1-sol',
+      models: ['gpt-6.1-sol'],
+      startedAt: now - 220 * 60000,
+      lastActivity: now - 176 * 60000,
+      activeMs: 32 * 60000,
+      elapsedMs: 44 * 60000,
+      status: 'idle',
+      tokens: {
+        input: 67000,
+        cached: 721000,
+        cacheWrite: 38000,
+        cacheWriteLong: 0,
+        output: 12000,
+        reasoning: 3600,
+      },
+      cost: 1.05,
+      unpricedTokens: 0,
+      responses: 31,
+    },
   ];
-  const daily=Array.from({length:30},(_,i)=>{const d=new Date(now);d.setDate(d.getDate()-29+i);return{date:`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`,claude:Math.round((Math.sin(i*1.5)+1.8)*130)/100,codex:Math.round((Math.cos(i*.7)+1.5)*100)/100,tokens:Math.round(600000+i*10000)};});
-  daily[29]={...daily[29],claude:3.22,codex:2.67,tokens:2896200};
-  const today={cost:5.89,tokens:{input:245000,cached:2869000,cacheWrite:186000,cacheWriteLong:0,output:92200,reasoning:16300},totalTokens:3392200,cacheSavings:10.42,activeMs:136*60000,sessions:4,unpricedTokens:0};
-  return {version:'0.1.0',collectedAt:now,scanning:false,demo:true,settings,prices:PRICES,pricingUpdatedAt:PRICING_UPDATED,totals:{today,week:{...today,cost:38.42,totalTokens:18920000,sessions:26,activeMs:906*60000},month:{...today,cost:142.16,totalTokens:68420000,sessions:97,activeMs:3316*60000}},daily,sessions,limits:[{provider:'claude',plan:null,note:'Resets estimated from local Claude desktop history.',windows:[{id:'claude:fh',label:'5-hour window',windowMinutes:300,usedPercent:38,resetsAt:now+142*60000,resetEstimated:true,observedAt:now,source:'claude-desktop',stale:false,expired:false},{id:'claude:sd',label:'Weekly window',windowMinutes:10080,usedPercent:62,resetsAt:now+3*86400000+3600000,resetEstimated:true,observedAt:now,source:'claude-desktop',stale:false,expired:false}]},{provider:'codex',plan:'plus',note:null,windows:[{id:'codex:fh',label:'5-hour window',windowMinutes:300,usedPercent:24,resetsAt:now+202*60000,resetEstimated:false,observedAt:now,source:'codex-log',stale:false,expired:false},{id:'codex:sd',label:'Weekly window',windowMinutes:10080,usedPercent:45,resetsAt:now+4*86400000+7200000,resetEstimated:false,observedAt:now,source:'codex-log',stale:false,expired:false}]}],models:[{label:'claude-opus-5',provider:'claude',cost:68.4,tokens:31000000,sessions:32,unpricedTokens:0},{label:'gpt-6.1-sol',provider:'codex',cost:47.62,tokens:26000000,sessions:42,unpricedTokens:0},{label:'claude-sonnet-5',provider:'claude',cost:26.14,tokens:11000000,sessions:23,unpricedTokens:0}],projects:[{label:'tokencal',provider:'claude',cost:62,tokens:26000000,sessions:31,unpricedTokens:0},{label:'portfolio',provider:'codex',cost:42,tokens:18000000,sessions:28,unpricedTokens:0}],sources:[{id:'claude',label:'Claude Code sessions',path:settings.claudePath,state:'ready',files:18},{id:'codex',label:'Codex sessions',path:settings.codexPath,state:'ready',files:32},{id:'claude-history',label:'Claude desktop limits',path:settings.claudeHistoryPath,state:'ready',files:1}],unknownModels:[],warnings:[]};
+  const daily = Array.from({ length: 30 }, (_, i) => {
+    const d = new Date(now);
+    d.setDate(d.getDate() - 29 + i);
+    return {
+      date: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`,
+      claude: Math.round((Math.sin(i * 1.5) + 1.8) * 130) / 100,
+      codex: Math.round((Math.cos(i * 0.7) + 1.5) * 100) / 100,
+      tokens: Math.round(600000 + i * 10000),
+    };
+  });
+  daily[29] = { ...daily[29], claude: 3.22, codex: 2.67, tokens: 2896200 };
+  const today = {
+    cost: 5.89,
+    tokens: {
+      input: 245000,
+      cached: 2869000,
+      cacheWrite: 186000,
+      cacheWriteLong: 0,
+      output: 92200,
+      reasoning: 16300,
+    },
+    totalTokens: 3392200,
+    cacheSavings: 10.42,
+    activeMs: 136 * 60000,
+    sessions: 4,
+    unpricedTokens: 0,
+  };
+  return {
+    version: '0.1.0',
+    collectedAt: now,
+    scanning: false,
+    demo: true,
+    settings,
+    prices: PRICES,
+    pricingUpdatedAt: PRICING_UPDATED,
+    totals: {
+      today,
+      week: { ...today, cost: 38.42, totalTokens: 18920000, sessions: 26, activeMs: 906 * 60000 },
+      month: {
+        ...today,
+        cost: 142.16,
+        totalTokens: 68420000,
+        sessions: 97,
+        activeMs: 3316 * 60000,
+      },
+    },
+    daily,
+    sessions,
+    limits: [
+      {
+        provider: 'claude',
+        plan: null,
+        note: 'Resets estimated from local Claude desktop history.',
+        windows: [
+          {
+            id: 'claude:fh',
+            label: '5-hour window',
+            windowMinutes: 300,
+            usedPercent: 38,
+            resetsAt: now + 142 * 60000,
+            resetEstimated: true,
+            observedAt: now,
+            source: 'claude-desktop',
+            stale: false,
+            expired: false,
+          },
+          {
+            id: 'claude:sd',
+            label: 'Weekly window',
+            windowMinutes: 10080,
+            usedPercent: 62,
+            resetsAt: now + 3 * 86400000 + 3600000,
+            resetEstimated: true,
+            observedAt: now,
+            source: 'claude-desktop',
+            stale: false,
+            expired: false,
+          },
+        ],
+      },
+      {
+        provider: 'codex',
+        plan: 'plus',
+        note: null,
+        windows: [
+          {
+            id: 'codex:fh',
+            label: '5-hour window',
+            windowMinutes: 300,
+            usedPercent: 24,
+            resetsAt: now + 202 * 60000,
+            resetEstimated: false,
+            observedAt: now,
+            source: 'codex-log',
+            stale: false,
+            expired: false,
+          },
+          {
+            id: 'codex:sd',
+            label: 'Weekly window',
+            windowMinutes: 10080,
+            usedPercent: 45,
+            resetsAt: now + 4 * 86400000 + 7200000,
+            resetEstimated: false,
+            observedAt: now,
+            source: 'codex-log',
+            stale: false,
+            expired: false,
+          },
+        ],
+      },
+    ],
+    models: [
+      {
+        label: 'claude-opus-5',
+        provider: 'claude',
+        cost: 68.4,
+        tokens: 31000000,
+        sessions: 32,
+        unpricedTokens: 0,
+      },
+      {
+        label: 'gpt-6.1-sol',
+        provider: 'codex',
+        cost: 47.62,
+        tokens: 26000000,
+        sessions: 42,
+        unpricedTokens: 0,
+      },
+      {
+        label: 'claude-sonnet-5',
+        provider: 'claude',
+        cost: 26.14,
+        tokens: 11000000,
+        sessions: 23,
+        unpricedTokens: 0,
+      },
+    ],
+    projects: [
+      {
+        label: 'tokencal',
+        provider: 'claude',
+        cost: 62,
+        tokens: 26000000,
+        sessions: 31,
+        unpricedTokens: 0,
+      },
+      {
+        label: 'portfolio',
+        provider: 'codex',
+        cost: 42,
+        tokens: 18000000,
+        sessions: 28,
+        unpricedTokens: 0,
+      },
+    ],
+    sources: [
+      {
+        id: 'claude',
+        label: 'Claude Code sessions',
+        path: settings.claudePath,
+        state: 'ready',
+        files: 18,
+      },
+      { id: 'codex', label: 'Codex sessions', path: settings.codexPath, state: 'ready', files: 32 },
+      {
+        id: 'claude-history',
+        label: 'Claude desktop limits',
+        path: settings.claudeHistoryPath,
+        state: 'ready',
+        files: 1,
+      },
+    ],
+    unknownModels: [],
+    warnings: [],
+  };
 }
