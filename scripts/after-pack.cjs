@@ -10,4 +10,11 @@ module.exports = async (context) => {
   for (const key of ['com.apple.FinderInfo', 'com.apple.ResourceFork']) {
     await promisify(execFile)('/usr/bin/xattr', ['-d', '-r', '-s', key, bundle]);
   }
+  // Electron's prebuilt executable retains its old signature after the bundle is
+  // repackaged. Give local builds a valid ad-hoc seal, including bundled helpers.
+  // Electron Builder replaces this seal with Developer ID when one is configured.
+  await promisify(execFile)('/usr/bin/codesign', [
+    '--force', '--deep', '--sign', '-', '--entitlements',
+    path.join(context.packager.projectDir, 'assets/entitlements.mac.plist'), bundle,
+  ]);
 };

@@ -214,7 +214,13 @@ export default function SettingsView({
       </section>
       <section className="card settings-card">
         <h3>Local data sources</h3>
-        <p>TokenCal reads usage metadata. It never reads your sign-in credentials.</p>
+        <p>TokenCal finds your existing agent logs and Claude Code login automatically.</p>
+        {toggle('liveClaudeUsage', 'Refresh Claude plan usage automatically',
+          'Use Claude Code’s saved login to read usage from Anthropic every three minutes. No new sign-in or changes to Claude settings.')}
+        {snapshot.claudeLive && <div className="settings-info"><Info size={16} /><p>
+          {snapshot.claudeLive.message} {snapshot.claudeLive.state === 'permission'
+            ? 'Use Refresh at the top of TokenCal to request access again.' : ''}
+        </p></div>}
         {toggle(
           'autoDetectSources',
           'Find sessions automatically',
@@ -273,8 +279,8 @@ export default function SettingsView({
           <Info size={16} />
           <p>
             Start a coding session and it will appear automatically. On Windows, running WSL
-            distributions are detected too. Claude plan percentages require Claude desktop’s local
-            usage history. Limits cover the account that wrote each local reading.
+            distributions are detected too. Claude plan usage refreshes from the saved Claude Code
+            login. Desktop history is a fallback. Limits cover the account that supplied the reading.
           </p>
         </div>
       </section>
@@ -433,8 +439,8 @@ export default function SettingsView({
         <div>
           <h3>Your data stays here.</h3>
           <p>
-            No telemetry, sign-in, or background network requests. TokenCal keeps only usage
-            metadata in its private local cache. Export is always your choice.
+            No telemetry or new sign-in. Claude plan usage requests go only to Anthropic using your
+            existing Claude Code login. Login tokens stay in memory and are never cached or exported.
           </p>
           <small>Last collection: {relativeTime(snapshot.collectedAt)}</small>
         </div>

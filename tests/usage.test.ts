@@ -211,9 +211,9 @@ describe('quota observations', () => {
       { version: 2, samples: [{ t: reading, org: 'A', u: { fh: 20, sd: 30 } }] },
       at,
     );
-    expect(limits.note).toContain('Claude last saved plan usage on');
-    expect(limits.note).toContain('menu-bar/tray panel');
-    expect(limits.note).toContain('Claude Code sessions still update');
+    expect(limits.note).toContain('Claude desktop last saved plan usage on');
+    expect(limits.note).toContain('automatic Claude plan refresh');
+    expect(limits.note).toContain('Session costs still update');
     expect(limits.windows[0]).toMatchObject({ observedAt: reading, usedPercent: 20, stale: true });
     expect(limits.note).not.toContain('Open Claude desktop');
   });

@@ -1,6 +1,6 @@
 {
   "name": "tokencal",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "private": true,
   "description": "Local-first token costs and usage limits in your menu bar.",
   "author": "TokenCal contributors",
@@ -86,6 +86,7 @@
       "artifactName": "TokenCal-${version}-mac-${arch}.${ext}",
       "minimumSystemVersion": "14.0",
       "extraResources": [
+        { "from": "native/bin/claude-access", "to": "claude-access" },
         {
           "from": "native/bin/notch-info",
           "to": "notch-info"

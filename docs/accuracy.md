@@ -46,11 +46,21 @@ Limits are account-level readings from this computer, not per-session allowances
 
 ## Claude limits and resets
 
+### Automatic account readings
+
+The public app defaults to automatic refresh, without per-user setup, hooks, or agent configuration changes. It finds Claude Code's saved subscription login and makes a read-only request to Anthropic's usage endpoint every three minutes. macOS may require the normal Keychain permission. Windows/custom profiles use the agent's existing credential file. See [privacy](privacy.md) for the exact credential and network boundary.
+
+The provider's `five_hour`, `seven_day`, `seven_day_opus`, and `seven_day_sonnet` windows supply utilization and reset timestamps. Available windows are independent; a missing session window does not discard a valid weekly window or become zero. Reset timestamps are provider observations and are not marked `~`. Unsupported/missing values stay unavailable. This internal endpoint is also used by [CodexBar's Claude provider](https://github.com/steipete/CodexBar/blob/main/docs/claude.md); its schema and availability can change.
+
+A successful request dates the reading. Polling, failed requests, and retry backoff never refresh that timestamp. Failed refreshes retain the previous reading visibly stale. Unauthorized logins and changed tokens clear the old in-memory reading before a new account can supply data. TokenCal does not refresh or modify shared credentials; Claude Code owns that login. API-key-only or insufficient-scope logins may not expose subscription usage. These percentages cover the signed-in Claude Code account, which can differ from Claude desktop.
+
+### Saved desktop fallback
+
 Claude desktop history supports version 1 (percentages next to `t`) and version 2 (`samples[].u`). It provides `fh` (five-hour), `sd` (weekly), and optional `so`/`sn` model-specific weekly windows. The newest account's samples are kept separate from other accounts during reset inference. The plan history belongs to the desktop account; it may differ from the Claude Code account.
 
 The percentages are provider-recorded. The history contains **no official reset timestamp**. TokenCal uses the most recent percentage drop as an estimated renewal anchor, and a first positive sample after zero as a five-hour anchor when available. The later sample in that bracket is conservative; missed readings can make estimates substantially late. Each inferred reset is explicitly marked `~`. Without an anchor, the UI says the reset is unavailable. It never rolls an old reading forward to pretend that it is current.
 
-Readings older than 20 minutes are visibly stale; expired windows are shown as awaiting fresh data. Keeping Claude's main window open does not guarantee history updates. The desktop app's usage sampler can pause when its menu-bar/tray panel has not been opened recently. Opening that panel requests a fresh reading when the sampler is enabled. The installed 2.37337.1 Mac app and its diagnostic log confirmed a 24-hour recent-panel requirement on this machine; that threshold is controlled by Claude and can vary. TokenCal shows the saved observation time rather than assuming the app is closed. Cost and session tracking work independently of this file.
+Readings older than 20 minutes are visibly stale; expired windows are shown as awaiting fresh data. Keeping Claude's main window open or refreshing its Settings Usage page does not guarantee history updates. The installed 2.37337.1 Mac app's sampler can pause after 24 hours without its tray usage action; an ordinary left-click does not trigger that action, and the icon may be hidden or unavailable. TokenCal's automatic account reader avoids depending on that desktop behavior. If live account access is unavailable or disabled, the UI retains the saved observation time and labels the source as desktop history. Cost and session tracking work independently.
 
 ## Coverage
 

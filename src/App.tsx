@@ -101,7 +101,9 @@ function LimitCards({ snapshot }: { snapshot: Snapshot }) {
               <p>{p.plan ? `${p.plan[0].toUpperCase() + p.plan.slice(1)} plan` : 'Local usage'}</p>
             </div>
             <span className="source-tag">
-              {p.provider === 'claude' ? 'Desktop history' : 'Session logs'}
+              {p.provider === 'claude'
+                ? p.windows.some(w => w.source === 'claude-live') ? 'Live account usage' : 'Desktop history'
+                : 'Session logs'}
             </span>
           </div>
           {p.windows.length ? (
@@ -480,7 +482,7 @@ function CompactView({
           </button>
           <div className="compact-footer">
             <LockKeyhole size={12} />
-            Local only
+            Private by default
             <span>{snapshot.scanning ? 'Refreshing…' : relativeTime(snapshot.collectedAt)}</span>
           </div>
         </div>
@@ -599,9 +601,9 @@ export default function App() {
             <ShieldCheck size={20} />
             <strong>Stays on your device.</strong>
             <p>
-              No account. No uploads.
+              No TokenCal account.
               <br />
-              Just your local session logs.
+              Conversations stay local.
             </p>
           </div>
           <button className="sample-button" onClick={() => setDemo(!demo)}>
@@ -622,7 +624,7 @@ export default function App() {
           <div>
             <span className="local-badge">
               <i className="live-dot" />
-              Local only
+              Private by default
             </span>
             <button
               className="icon-button"
@@ -784,7 +786,7 @@ export default function App() {
               <div className="section-heading">
                 <h2>Plan usage</h2>
                 <span>
-                  From your existing local data <LockKeyhole size={13} />
+                  Provider readings and local activity <LockKeyhole size={13} />
                 </span>
               </div>
               <LimitCards snapshot={data} />

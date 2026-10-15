@@ -65,6 +65,8 @@ The dashboard and native tray start together. On macOS, use **macOS 14 or later*
 
 Large histories may take a few seconds to scan. Move the dashboard by its title bar, header, or TokenCal logo. Closing the dashboard keeps the app in the menu bar or tray; right-click the icon to refresh, show the widget, or quit.
 
+**Claude plan usage refreshes automatically.** TokenCal detects the login already saved by Claude Code and reads current allowances from Anthropic every three minutes. Claude desktop does not need to be open or have a menu-bar icon. No status line, hook, or agent-settings setup is needed. On macOS, approve the normal Keychain permission if asked. Automatic plan refresh can be disabled in Settings; local session tracking continues.
+
 <details>
 <summary><strong>Installer guide — for future packaged releases</strong></summary>
 
@@ -92,13 +94,14 @@ Claude Code / Codex local logs
    Dashboard · tray · notch
 ```
 
-| Local source | What TokenCal reads |
+| Source | What TokenCal reads |
 | :--- | :--- |
 | Claude Code project logs | Per-response tokens, model, timestamps, project names, and turn boundaries |
 | Codex session and archived-session logs | Response usage or legacy token totals, models, turn boundaries, and recorded account limits |
-| Claude desktop's `plan-usage-history.json` | Saved usage percentages and the history of usage drops |
+| Existing Claude Code login + Anthropic usage endpoint | Current subscription percentages and provider reset times |
+| Claude desktop's `plan-usage-history.json` | Fallback usage percentages and the history of usage drops |
 
-Claude percentages depend on a local history file that is not available in every desktop version. Codex limits update when a new observation is written to its logs. Cloud-only ChatGPT chats and remote sessions need local logs to appear here.
+Claude plan refresh uses the standard `Claude Code-credentials` Keychain item on macOS, or `.credentials.json` in the Claude configuration directory on Windows/custom profiles. The login must support subscription usage access; API-key-only logins may not expose these quotas. TokenCal sends the existing access token only to Anthropic and never saves or exports it. Saved desktop history is a fallback if live access is unavailable or disabled. Codex limits update when a new observation is written to its logs. Cloud-only ChatGPT chats and remote sessions need local logs to appear here.
 
 <details>
 <summary><strong>Custom folders, WSL, and source details</strong></summary>
@@ -109,13 +112,13 @@ Claude percentages depend on a local history file that is not available in every
 - Claude desktop history is searched in `~/Library/Application Support/Claude` on macOS and `%APPDATA%/Claude` on Windows.
 - On Windows, running WSL distributions and their default user homes are detected automatically. TokenCal does not start stopped distributions. Choose custom WSL agent homes in source details.
 
-Claude desktop history has usage percentages but no official reset timestamps. Inferred reset times are marked `~`; unknown reset times remain unknown. [Source and accounting details →](docs/accuracy.md)
+Live Claude readings include provider reset timestamps. Desktop history contains percentages without those timestamps; its inferred reset times are marked `~`. Unknown reset times remain unknown. [Source and accounting details →](docs/accuracy.md)
 
 </details>
 
 ## Private by design
 
-The published app reads session logs locally and keeps usage metadata on your computer. It has **no analytics, telemetry, credential access, or background network requests**. It does not retain conversation content, add hooks, or change your agent configuration.
+The app reads session logs locally and keeps usage metadata on your computer. It has **no analytics or telemetry** and never retains conversation content, adds hooks, or changes agent configuration. Automatic Claude plan refresh uses Claude Code's saved access token for a read-only request to Anthropic. Tokens stay in main-process memory and are never cached, rendered, or exported. No browser cookies or unrelated credentials are read.
 
 Cached metadata includes source paths, session IDs, project folder names, token counts, models, and timing. [Read the privacy guide →](docs/privacy.md)
 

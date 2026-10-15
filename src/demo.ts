@@ -1,4 +1,5 @@
 import type { Snapshot, Session, Settings } from './shared/types';
+import { version } from '../package.json';
 import { PRICES, PRICING_UPDATED, zeroTokens } from './shared/pricing';
 
 export function demoSnapshot(): Snapshot {
@@ -15,6 +16,7 @@ export function demoSnapshot(): Snapshot {
     notchEnabled: false,
     widgetMode: 'auto',
     autoDetectSources: true,
+    liveClaudeUsage: true,
     trayCost: true,
     notifications: false,
     dailyBudget: 25,
@@ -142,7 +144,7 @@ export function demoSnapshot(): Snapshot {
     unpricedTokens: 0,
   };
   return {
-    version: '0.2.1',
+    version,
     collectedAt: now,
     scanning: false,
     demo: true,

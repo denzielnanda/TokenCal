@@ -28,6 +28,7 @@ export function defaultSettings(home = os.homedir(), platform = process.platform
     notchEnabled: false,
     widgetMode: 'auto',
     autoDetectSources: true,
+    liveClaudeUsage: true,
     trayCost: true,
     notifications: false,
     dailyBudget: 0,
@@ -42,6 +43,7 @@ const boolKeys = [
   'trayCost',
   'notifications',
   'autoDetectSources',
+  'liveClaudeUsage',
 ] as const;
 const pathKeys = ['claudePath', 'codexPath', 'claudeHistoryPath'] as const;
 export function validateSettings(patch: unknown, current: Settings): Settings {
