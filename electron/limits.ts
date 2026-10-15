@@ -76,7 +76,7 @@ export function claudeHistoryLimits(data: unknown, now: number): ProviderLimits 
       dateStyle: 'medium',
       timeStyle: 'short',
     });
-    result.note = `Claude last saved plan usage on ${saved}. Try its menu-bar/tray panel for a fresh reading. Claude Code sessions still update.`;
+    result.note = `Last saved Claude plan reading: ${saved}. Plan percentages update when Claude saves new data. Token counts, session time, and costs continue from local logs.`;
   } else
     result.note =
       'Percentages come from Claude desktop. Resets inferred from usage drops are estimates.';

@@ -57,7 +57,7 @@ export interface LimitWindow {
   resetsAt: number | null;
   resetEstimated: boolean;
   observedAt: number;
-  source: 'codex-log' | 'claude-desktop';
+  source: 'codex-log' | 'claude-desktop' | 'claude-live';
   stale: boolean;
   expired: boolean;
 }
@@ -122,6 +122,7 @@ export interface Settings {
   notchEnabled: boolean;
   widgetMode: WidgetMode;
   autoDetectSources: boolean;
+  claudePlanSource: 'local' | 'account';
   trayCost: boolean;
   notifications: boolean;
   dailyBudget: number;
@@ -145,6 +146,13 @@ export interface Snapshot {
   unknownModels: string[];
   warnings: string[];
   widget?: WidgetGeometry;
+  claudeLive?: ClaudeLiveStatus;
+}
+export interface ClaudeLiveStatus {
+  state: 'checking' | 'ready' | 'disabled' | 'missing' | 'permission' | 'expired' | 'scope' | 'offline' | 'rate-limited' | 'error';
+  checkedAt: number | null;
+  nextCheckAt: number | null;
+  message: string;
 }
 export interface TokenCalAPI {
   getSnapshot(): Promise<Snapshot>;

@@ -28,6 +28,7 @@ export function defaultSettings(home = os.homedir(), platform = process.platform
     notchEnabled: false,
     widgetMode: 'auto',
     autoDetectSources: true,
+    claudePlanSource: 'local',
     trayCost: true,
     notifications: false,
     dailyBudget: 0,
@@ -64,6 +65,13 @@ export function validateSettings(patch: unknown, current: Settings): Settings {
         throw new Error('Choose an absolute local path.');
       result[key] = p[key] as string;
     }
+  if ('claudePlanSource' in p) {
+    if (p.claudePlanSource !== 'local' && p.claudePlanSource !== 'account')
+      throw new Error('Invalid Claude plan source.');
+    result.claudePlanSource = p.claudePlanSource;
+  }
+  // The old preview's automatic liveClaudeUsage flag is deliberately ignored.
+  // Upgrades require a new, explicit account-source choice.
   if ('widgetMode' in p) {
     if (!['auto', 'notch', 'edge'].includes(String(p.widgetMode)))
       throw new Error('Invalid widget placement.');

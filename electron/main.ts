@@ -21,6 +21,7 @@ import type { Settings, Snapshot, WidgetGeometry } from '../src/shared/types';
 import { defaultSettings, validateSettings } from './settings';
 import { buildSnapshot } from './summary';
 import { parseNativeDisplays, widgetGeometry, type NativeDisplay } from './notch';
+import { ClaudeLiveUsage, readClaudeLogin } from './claude-live';
 
 protocol.registerSchemesAsPrivileged([
   { scheme: 'tokencal', privileges: { standard: true, secure: true, supportFetchAPI: true } },
@@ -51,6 +52,24 @@ let snapshot = buildSnapshot([], settings, [], {
 });
 const noticeKeys = new Set<string>();
 const settingsFile = () => path.join(app.getPath('userData'), 'settings.json');
+const claudeLive = new ClaudeLiveUsage((preferences, allowPrompt) => readClaudeLogin(
+  preferences, app.isPackaged ? path.join(process.resourcesPath, 'claude-access')
+    : path.join(app.getAppPath(), 'native/bin/claude-access'), allowPrompt,
+  { skipKeychain: process.env.TOKENCAL_SKIP_KEYCHAIN === '1' },
+));
+async function refreshClaudeLive(force = false, allowPrompt = false) {
+  await claudeLive.refresh(settings, force, allowPrompt);
+  publish();
+}
+function visibleSnapshot(): Snapshot {
+  const accountSource = settings.claudePlanSource === 'account';
+  const live = settings.claudeEnabled && accountSource ? claudeLive.getLimits() : null;
+  const limits = snapshot.limits.map(provider => provider.provider === 'claude'
+    ? live ?? { ...provider, note: accountSource
+      ? claudeLive.status.message + (provider.windows.length ? ' Saved desktop history is shown below.' : '')
+      : provider.note } : provider);
+  return { ...snapshot, settings, scanning, widget, limits, claudeLive: claudeLive.status };
+}
 async function saveSettings() {
   await fs.mkdir(app.getPath('userData'), { recursive: true, mode: 0o700 });
   const tmp = settingsFile() + '.tmp';
@@ -58,9 +77,9 @@ async function saveSettings() {
   await fs.rename(tmp, settingsFile());
 }
 function publish() {
-  snapshot = { ...snapshot, settings, scanning, widget };
+  const visible = visibleSnapshot();
   for (const w of [dashboard, popup, notch])
-    if (w && !w.isDestroyed()) w.webContents.send('snapshot:changed', snapshot);
+    if (w && !w.isDestroyed()) w.webContents.send('snapshot:changed', visible);
   const cost = snapshot.totals.today.cost.toFixed(2);
   if (tray) {
     tray.setToolTip(
@@ -81,11 +100,11 @@ function collect() {
 }
 function schedule() {
   if (timer) clearInterval(timer);
-  timer = setInterval(collect, settings.pollSeconds * 1000);
+  timer = setInterval(() => { collect(); void refreshClaudeLive(); }, settings.pollSeconds * 1000);
 }
 function notify() {
   if (!settings.notifications || !Notification.isSupported()) return;
-  for (const provider of snapshot.limits)
+  for (const provider of visibleSnapshot().limits)
     for (const w of provider.windows) {
       if (w.stale || w.expired || w.usedPercent < 80) continue;
       const threshold = w.usedPercent >= 95 ? 95 : 80;
@@ -245,7 +264,7 @@ function applyNotch() {
 function menu() {
   return Menu.buildFromTemplate([
     { label: 'Open TokenCal', click: showDashboard },
-    { label: 'Refresh usage', click: collect },
+    { label: 'Refresh usage', click: () => { collect(); void refreshClaudeLive(true, true); } },
     { type: 'separator' },
     {
       label: 'Show notch / top-edge widget',
@@ -279,8 +298,8 @@ export function csvCell(value: string | number) {
   return '"' + safe.replace(/"/g, '""') + '"';
 }
 function registerIPC() {
-  handle('snapshot:get', () => snapshot);
-  handle('snapshot:refresh', () => collect());
+  handle('snapshot:get', () => visibleSnapshot());
+  handle('snapshot:refresh', () => { collect(); void refreshClaudeLive(true, true); });
   handle('dashboard:show', () => showDashboard());
   handle('notch:expand', (expanded: unknown) => {
     if (typeof expanded !== 'boolean') throw new Error('Invalid widget state.');
@@ -289,6 +308,17 @@ function registerIPC() {
   });
   handle('settings:update', async (patch: unknown) => {
     const next = validateSettings(patch, settings);
+    if (next.claudePlanSource === 'account' && settings.claudePlanSource !== 'account') {
+      const consent = await dialog.showMessageBox({
+        type: 'question', title: 'Enable optional live Claude plan usage?',
+        message: 'Use Claude Code’s saved login to read current plan allowances from Anthropic?',
+        detail: 'This optional mode contacts Anthropic’s usage API and may ask for macOS Keychain permission. It does not send conversations, request an API key, or change Claude settings. Local token, cost, and session tracking works without it.',
+        buttons: ['Enable live plan usage', 'Keep local tracking'], defaultId: 1, cancelId: 1,
+      });
+      if (consent.response !== 0) return settings;
+    }
+    const liveChanged = next.claudePlanSource !== settings.claudePlanSource ||
+      next.claudeEnabled !== settings.claudeEnabled || next.claudePath !== settings.claudePath;
     if (next.launchAtLogin !== settings.launchAtLogin)
       app.setLoginItemSettings({ openAtLogin: next.launchAtLogin, args: ['--hidden'] });
     settings = next;
@@ -297,6 +327,7 @@ function registerIPC() {
     schedule();
     publish();
     collect();
+    if (liveChanged) void refreshClaudeLive(true, next.claudePlanSource === 'account' && next.claudeEnabled);
     return settings;
   });
   handle('path:choose', async (kind: unknown) => {
@@ -458,6 +489,9 @@ void app.whenReady().then(async () => {
   await readDisplays();
   applyNotch();
   collect();
+  // Local mode never reads a login or makes a provider request. Previously enabled
+  // account mode may poll silently; permission prompts require an explicit user action.
+  void refreshClaudeLive();
   schedule();
   if (!process.argv.includes('--hidden') && !app.getLoginItemSettings().wasOpenedAtLogin)
     showDashboard();

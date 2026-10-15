@@ -18,9 +18,9 @@ For macOS, configure repository secrets `CSC_LINK` (base64 or hosted Developer I
 
 For Windows, configure `WIN_CSC_LINK` and `WIN_CSC_KEY_PASSWORD` for your signing certificate. Use your chosen signing service if certificate export is unavailable. Verify with the Windows SDK's `signtool verify` before publication. A new publisher may still encounter reputation checks.
 
-Never commit certificates or signing credentials. The MacBook detector is compiled from the included Swift source and bundled as a universal executable. Verify its signature as part of the app’s deep validation.
+Never commit certificates or signing credentials. The MacBook detector and narrowly scoped Claude Keychain reader compile from the included Swift sources as universal executables. Verify both helpers as part of the app’s deep signature validation. Stable Developer ID signing also matters for macOS Keychain permission across app updates.
 
-A repository with no signing secrets can still build unsigned artifacts; its release notes must say so. User permission settings must not be weakened to hide signing failures. The macOS `afterPack` hook removes only FinderInfo and ResourceFork metadata from the newly generated bundle before signing; it preserves quarantine attributes.
+A repository with no signing secrets produces locally ad-hoc signed Mac bundles and unsigned Windows artifacts; release notes must say so. User permission settings must not be weakened to hide signing failures. The Mac `afterPack` hook removes only FinderInfo/ResourceFork metadata, preserves quarantine, and gives the repackaged app/helpers a valid local seal. Electron Builder replaces that seal with Developer ID signing when configured.
 
 ## Local build commands
 

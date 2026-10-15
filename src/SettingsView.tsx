@@ -214,7 +214,7 @@ export default function SettingsView({
       </section>
       <section className="card settings-card">
         <h3>Local data sources</h3>
-        <p>TokenCal reads usage metadata. It never reads your sign-in credentials.</p>
+        <p>Claude Code and Codex tokens, costs, and session time update from local logs. No login setup.</p>
         {toggle(
           'autoDetectSources',
           'Find sessions automatically',
@@ -273,10 +273,28 @@ export default function SettingsView({
           <Info size={16} />
           <p>
             Start a coding session and it will appear automatically. On Windows, running WSL
-            distributions are detected too. Claude plan percentages require Claude desktop’s local
-            usage history. Limits cover the account that wrote each local reading.
+            distributions are detected too. Claude plan percentages come from its saved desktop
+            history; they can lag behind session activity. Session tracking works independently.
           </p>
         </div>
+        <details className="source-advanced">
+          <summary>Optional live Claude plan usage</summary>
+          <div className="setting-row">
+            <div><strong>Use Claude account for live plan usage</strong><p>
+              Off by default. Uses Claude Code’s existing login to contact Anthropic’s usage API
+              for plan percentages and reset times. Local tracking needs no account access.
+            </p></div>
+            <button role="switch" aria-label="Use Claude account for live plan usage"
+              aria-checked={settings.claudePlanSource === 'account'}
+              className={`toggle ${settings.claudePlanSource === 'account' ? 'on' : ''}`}
+              disabled={demo || busy}
+              onClick={() => save({ claudePlanSource: settings.claudePlanSource === 'account' ? 'local' : 'account' })}>
+              <span />
+            </button>
+          </div>
+          {settings.claudePlanSource === 'account' && snapshot.claudeLive &&
+            <div className="settings-info"><Info size={16} /><p>{snapshot.claudeLive.message}</p></div>}
+        </details>
       </section>
       <section className="card settings-card">
         <div className="section-row">
@@ -433,8 +451,8 @@ export default function SettingsView({
         <div>
           <h3>Your data stays here.</h3>
           <p>
-            No telemetry, sign-in, or background network requests. TokenCal keeps only usage
-            metadata in its private local cache. Export is always your choice.
+            Local tracking needs no sign-in, credential access, or background network requests.
+            Optional live Claude plan usage contacts Anthropic only after you enable it.
           </p>
           <small>Last collection: {relativeTime(snapshot.collectedAt)}</small>
         </div>

@@ -65,6 +65,10 @@ The dashboard and native tray start together. On macOS, use **macOS 14 or later*
 
 Large histories may take a few seconds to scan. Move the dashboard by its title bar, header, or TokenCal logo. Closing the dashboard keeps the app in the menu bar or tray; right-click the icon to refresh, show the widget, or quit.
 
+**Local tracking works without login setup.** Both Claude Code and Codex tokens, estimated costs, and session time are read automatically from their local logs. Codex saves plan-limit observations in those logs; Claude plan percentages come from the desktop history file, as in Vorssaint. If that history stops updating, only the plan readings become stale—session tracking continues.
+
+An optional **live Claude plan usage** setting can read current allowances from Anthropic using an existing Claude Code login. It is **off by default**, requires confirmation, and may need macOS Keychain permission. It makes a read-only account API request, not a model request. No API key, TokenCal account, status line, hook, or agent-settings edits are needed for normal tracking.
+
 <details>
 <summary><strong>Installer guide — for future packaged releases</strong></summary>
 
@@ -92,13 +96,16 @@ Claude Code / Codex local logs
    Dashboard · tray · notch
 ```
 
-| Local source | What TokenCal reads |
+| Source | What TokenCal reads |
 | :--- | :--- |
 | Claude Code project logs | Per-response tokens, model, timestamps, project names, and turn boundaries |
 | Codex session and archived-session logs | Response usage or legacy token totals, models, turn boundaries, and recorded account limits |
-| Claude desktop's `plan-usage-history.json` | Saved usage percentages and the history of usage drops |
+| Optional account connection, off by default | Current Claude subscription percentages and provider reset times via Anthropic |
+| Claude desktop's `plan-usage-history.json` | Default Claude plan percentages and the history of usage drops |
 
-Claude percentages depend on a local history file that is not available in every desktop version. Codex limits update when a new observation is written to its logs. Cloud-only ChatGPT chats and remote sessions need local logs to appear here.
+In default local mode, TokenCal never reads a login or contacts a provider. Claude plan percentages depend on the desktop history file; they may be unavailable or old in some desktop versions. Codex limits update when a new observation is written to its logs. Cloud-only ChatGPT chats and remote sessions need local logs to appear here.
+
+If you explicitly enable the optional live account mode, it uses the `Claude Code-credentials` Keychain item on macOS or `.credentials.json` in the selected Claude configuration directory on Windows/custom profiles. That login must support subscription usage access. The access token is sent only to Anthropic and never saved or exported.
 
 <details>
 <summary><strong>Custom folders, WSL, and source details</strong></summary>
@@ -109,13 +116,15 @@ Claude percentages depend on a local history file that is not available in every
 - Claude desktop history is searched in `~/Library/Application Support/Claude` on macOS and `%APPDATA%/Claude` on Windows.
 - On Windows, running WSL distributions and their default user homes are detected automatically. TokenCal does not start stopped distributions. Choose custom WSL agent homes in source details.
 
-Claude desktop history has usage percentages but no official reset timestamps. Inferred reset times are marked `~`; unknown reset times remain unknown. [Source and accounting details →](docs/accuracy.md)
+Live Claude readings include provider reset timestamps. Desktop history contains percentages without those timestamps; its inferred reset times are marked `~`. Unknown reset times remain unknown. [Source and accounting details →](docs/accuracy.md)
 
 </details>
 
 ## Private by design
 
-The published app reads session logs locally and keeps usage metadata on your computer. It has **no analytics, telemetry, credential access, or background network requests**. It does not retain conversation content, add hooks, or change your agent configuration.
+The default app reads local files without **login setup, credential access, or background network requests**. It has no analytics or telemetry and never retains conversation content, adds hooks, or changes agent configuration.
+
+Optional live Claude plan usage reads the existing Claude Code access token and contacts Anthropic only after you enable it and confirm. Tokens stay in main-process memory and are never cached, rendered, or exported. No browser cookies or unrelated credentials are read.
 
 Cached metadata includes source paths, session IDs, project folder names, token counts, models, and timing. [Read the privacy guide →](docs/privacy.md)
 

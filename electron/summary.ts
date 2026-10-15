@@ -1,3 +1,4 @@
+import { version } from '../package.json';
 import {
   addTokens,
   estimateCost,
@@ -245,7 +246,7 @@ export function buildSnapshot(
     if (b) b.sessions++;
   }
   return {
-    version: '0.2.1',
+    version,
     collectedAt: now,
     scanning: false,
     demo: false,
