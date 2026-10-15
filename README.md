@@ -1,90 +1,155 @@
+<div align="center">
+
+<img src="assets/readme/hero.png" alt="TokenCal — Every token. In view. Local AI coding costs and usage limits for macOS and Windows." width="100%">
+
 # TokenCal
 
-**Every token. In view.**
+**A little clarity for your AI coding workflow.**
 
-Estimated AI coding costs, session time, and usage limits in your menu bar or MacBook notch.
+Token costs, session time, and usage limits for **Claude Code** and **Codex**,\
+in your menu bar, system tray, or MacBook notch.
 
-TokenCal is a free, open-source desktop companion for **Claude Code** and **Codex** on macOS and Windows. It reads the usage those tools already save on your computer. No new account, API key, or sign-in.
+[![Checks](https://github.com/denzielnanda/TokenCal/actions/workflows/ci.yml/badge.svg)](https://github.com/denzielnanda/TokenCal/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-397dff)](LICENSE)
+[![Platforms](https://img.shields.io/badge/platforms-macOS%20%7C%20Windows-242c3d)](#get-tokencal)
+[![Early preview](https://img.shields.io/badge/status-early%20preview-c5a582)](#get-tokencal)
 
-![TokenCal dashboard showing sample data](assets/screenshot-demo.png)
+[**Get started**](#get-tokencal) · [Features](#made-for-the-way-you-code) · [How it works](#how-it-works) · [Contribute](CONTRIBUTING.md) · [Report a bug](https://github.com/denzielnanda/TokenCal/issues/new?template=bug.yml)
 
-## What it does
+</div>
 
-- **Menu bar / system tray:** today's estimated USD, tokens, running sessions, and plan usage.
-- **MacBook notch:** cost and session time sit beside the camera. Hover or click for tokens, five-hour/weekly usage, and resets. Automatic camera detection also works when an external monitor is primary.
-- **Top-edge panel:** the same expandable widget on Windows and Macs without a notch.
-- **Session tracking:** project, model, token breakdown, active work time, session span, and estimated cost.
-- **Usage limits:** recorded five-hour, weekly, and model-specific windows, with reset countdowns and visible stale-data labels.
-- **Dashboard:** daily charts, model and project breakdowns, local CSV export, price overrides, and optional usage notifications.
+---
 
-**Cost means API-equivalent value, not your subscription invoice.** Claude desktop history contains usage percentages but no official reset timestamps; inferred resets are marked `~`, and unknown reset times stay unknown. See [accuracy and sources](docs/accuracy.md).
+## Your usage, at a glance
 
-## Download and use
+See what your coding sessions are using without opening another dashboard in your browser. TokenCal reads the usage your tools already save on your computer, turns it into a clear daily overview, and keeps the essentials one click away.
 
-1. Open this repository’s **Releases** page and download the installer for your computer: `mac-arm64.dmg` for Apple Silicon, `mac-x64.dmg` for Intel, or `windows-setup.exe` for Windows. The Windows installer selects x64 or ARM64 automatically.
-2. On macOS 14 or later, drag **TokenCal** into **Applications** and open it. On Windows, run the installer; TokenCal starts when installation finishes.
-3. Start a Claude Code or Codex session. TokenCal finds its logs automatically. Click the menu bar/tray icon for the quick panel. Enable **Show notch / top-edge widget** in **Settings** for the camera display.
+**Free and open source. No TokenCal account or API key required. Your session data stays on your device.**
 
-No account, API key, terminal, Node.js, Xcode, or folder setup is required to use a downloaded app. Automatic detection covers native folders, custom agent homes, legacy Claude folders, and running WSL distributions. The first scan of a large history may take a few seconds. Source details and manual overrides are optional.
+<img src="assets/screenshot-demo.png" alt="TokenCal dashboard with daily API-equivalent cost, tokens, session time, Claude Code and Codex usage windows, a weekly chart, and recent sessions." width="100%">
 
-Move the dashboard by its system title bar, header, or TokenCal logo. The tray panel can be moved by its header too.
+<p align="center"><sub>The app in sample mode. All values above are synthetic demonstration data.</sub></p>
 
-Closing the dashboard keeps TokenCal in the menu bar/tray. Right-click its icon to refresh, show the widget, or quit. Launch at login is optional.
+## Made for the way you code
 
-Before a public release, the maintainer should sign and notarize installers. Current local builds use ad-hoc Mac signatures and unsigned Windows installers; see [validation](docs/validation.md) for the exact test and signing status.
+| | What you get |
+| :--- | :--- |
+| **A glance, wherever you work** | Today's estimated cost, tokens, active sessions, and plan usage in your menu bar or Windows tray. |
+| **A home beside the camera** | A MacBook notch widget with expandable details. A top-edge panel on other Macs and Windows. |
+| **Every session in context** | Project, model, input/output/cache tokens, active work time, session span, and estimated cost. |
+| **Usage windows with context** | Recorded five-hour, weekly, and model-specific limits, reset countdowns, and clear labels when observations are stale. |
+| **The bigger picture** | Daily charts, model and project breakdowns, local CSV export, price overrides, and optional usage notifications. |
 
-## Source code versus the downloaded app
+> **An estimate, not an invoice.** Costs represent the API-equivalent value of recorded tokens. They do not represent your subscription charge or remaining plan allowance. Unknown prices and reset times stay unknown. [Read the accuracy notes →](docs/accuracy.md)
 
-The full application source is here under the MIT license, including the MacBook display detector, local parsers, interface, and packaging scripts. **Users download the compiled app from Releases; they do not have to read, configure, or build the code.** Source archives are for contributors and people who want to inspect or modify it. Publishing binaries while hiding the source would be a closed-source distribution.
+## Get TokenCal
 
-[Vorssaint](https://github.com/vorssaint/vorssaint-utils) follows the same separation: Swift code in `Sources`, ready-to-use apps in `Releases`.
+**TokenCal is an early preview. Source is available now; downloadable installers have not been published yet.** Follow the [Releases page](https://github.com/denzielnanda/TokenCal/releases) for packaged builds. Current signing and platform validation are documented in [validation](docs/validation.md).
 
-## Run from source (contributors)
+### Run from source
 
-Use **Node.js 24 LTS** and npm on macOS or Windows. Building the macOS detector also needs Xcode Command Line Tools and macOS 14 or later.
+Install **Node.js 24 LTS**, then run:
 
 ```sh
+git clone https://github.com/denzielnanda/TokenCal.git
+cd TokenCal
 npm ci
 npm run dev
 ```
 
-The dashboard and native tray start together. No agent credentials are accessed. Current build validation is recorded in [validation](docs/validation.md).
+The dashboard and native tray start together. On macOS, use **macOS 14 or later** with Xcode Command Line Tools for the display helper. Windows builds do not require Xcode.
 
-## Build installers
+1. Start a Claude Code or Codex session. TokenCal discovers supported local logs automatically.
+2. Click the menu bar or tray icon for a quick overview.
+3. Enable **Show notch / top-edge widget** in Settings to keep usage beside your work.
 
-```sh
-npm run check
-npm run test:desktop
-npm run dist:mac   # on macOS: DMG + ZIP for Apple Silicon and Intel
-npm run dist:win   # on Windows: NSIS installer + ZIP for x64 and ARM64
+Large histories may take a few seconds to scan. Move the dashboard by its title bar, header, or TokenCal logo. Closing the dashboard keeps the app in the menu bar or tray; right-click the icon to refresh, show the widget, or quit.
+
+<details>
+<summary><strong>Installer guide — for future packaged releases</strong></summary>
+
+| Your computer | Package |
+| :--- | :--- |
+| Apple Silicon Mac | `TokenCal-<version>-mac-arm64.dmg` |
+| Intel Mac | `TokenCal-<version>-mac-x64.dmg` |
+| Windows x64 or ARM64 | `TokenCal-<version>-windows-setup.exe` — selects the architecture automatically |
+
+On macOS, drag TokenCal into Applications. On Windows, run the installer. Packaged apps need no terminal, Node.js, Xcode, or folder setup. Launch at login is optional.
+
+Local Mac builds currently use ad-hoc signatures; Windows builds are unsigned. Signing and notarization remain part of release preparation. See [release instructions](docs/releasing.md).
+
+</details>
+
+## How it works
+
+```text
+Claude Code / Codex local logs
+              ↓
+  Read-only background parser
+              ↓
+  Usage metadata on your device
+              ↓
+   Dashboard · tray · notch
 ```
 
-Outputs go into `release/`. Build a local unpacked app with `npm run dist:dir`. Signing and notarization require your own platform certificates; see [release instructions](docs/releasing.md). The included GitHub Actions workflows build on both operating systems and create a **draft** release when you push a version tag.
+| Local source | What TokenCal reads |
+| :--- | :--- |
+| Claude Code project logs | Per-response tokens, model, timestamps, project names, and turn boundaries |
+| Codex session and archived-session logs | Response usage or legacy token totals, models, turn boundaries, and recorded account limits |
+| Claude desktop's `plan-usage-history.json` | Saved usage percentages and the history of usage drops |
 
-## How no-sign-in tracking works
+Claude percentages depend on a local history file that is not available in every desktop version. Codex limits update when a new observation is written to its logs. Cloud-only ChatGPT chats and remote sessions need local logs to appear here.
 
-| Source | Information used |
-| --- | --- |
-| `~/.claude/projects/**/*.jsonl` | Per-response tokens, model, timestamp, project folder name, turn boundaries |
-| `~/.codex/sessions/**/*.jsonl` and `archived_sessions` | Response usage records or legacy token totals, model, turn boundaries, recorded account limits |
-| Claude desktop's `plan-usage-history.json` | Latest usage percentages and history of usage drops |
+<details>
+<summary><strong>Custom folders, WSL, and source details</strong></summary>
 
-`CLAUDE_CONFIG_DIR` and `CODEX_HOME` are respected. Older `~/.config/claude/projects` installations are detected. All source paths can be changed in Settings. Claude desktop history is searched in `~/Library/Application Support/Claude` on macOS and `%APPDATA%/Claude` on Windows.
+- Claude Code defaults to `~/.claude/projects/**/*.jsonl`; older `~/.config/claude/projects` installations are detected.
+- Codex defaults to `~/.codex/sessions/**/*.jsonl` and `archived_sessions`.
+- `CLAUDE_CONFIG_DIR` and `CODEX_HOME` are respected. All source paths can be changed in Settings.
+- Claude desktop history is searched in `~/Library/Application Support/Claude` on macOS and `%APPDATA%/Claude` on Windows.
+- On Windows, running WSL distributions and their default user homes are detected automatically. TokenCal does not start stopped distributions. Choose custom WSL agent homes in source details.
 
-For agents inside WSL, running distributions and their default user homes are detected automatically through Windows-accessible folders such as `\\wsl.localhost\Ubuntu\home\you\.codex\sessions`. Stopped distributions are not started by TokenCal. Custom WSL agent homes can be chosen in source details. Cloud-only ChatGPT chats and remote sessions are not available unless their logs are on this computer.
+Claude desktop history has usage percentages but no official reset timestamps. Inferred reset times are marked `~`; unknown reset times remain unknown. [Source and accounting details →](docs/accuracy.md)
 
-Claude percentages require the Claude desktop history file, which may not be available in every desktop version. Without it, token costs and sessions still work. Codex limits update when Codex writes a new observation to its logs. TokenCal does not contact either vendor to refresh an account.
+</details>
 
-## Privacy
+## Private by design
 
-No analytics, telemetry, credential access, background network requests, hooks, or changes to agent configuration. Session logs are read-only. Parsing happens in a background worker; only usage metadata is retained. Source paths, session IDs, folder names, token counts, model names, and timing are cached locally, without conversation content. See [privacy](docs/privacy.md).
+The published app reads session logs locally and keeps usage metadata on your computer. It has **no analytics, telemetry, credential access, or background network requests**. It does not retain conversation content, add hooks, or change your agent configuration.
 
-## Contributing
+Cached metadata includes source paths, session IDs, project folder names, token counts, models, and timing. [Read the privacy guide →](docs/privacy.md)
 
-Read [CONTRIBUTING.md](CONTRIBUTING.md), [architecture](docs/architecture.md), and [SECURITY.md](SECURITY.md). Pricing lives in `src/shared/pricing.ts`; always cite the official source and add a focused regression test when adding formats or changing accounting.
+## Build something useful with us
 
-## Acknowledgements and license
+Bug reports, parser fixes, platform testing, and interface improvements are welcome. Start with the [contributing guide](CONTRIBUTING.md). Use synthetic or redacted examples when reporting an issue; keep real transcripts and credentials out of public posts.
 
-Research was informed by [Vorssaint's public usage-tracking documentation and source](https://github.com/vorssaint/vorssaint-utils/tree/main/Sources/Vorssaint/Services/AgentUsage). TokenCal has its own TypeScript implementation and UI; no Vorssaint code, branding, or assets are included.
+```sh
+npm run check          # regression tests + production build
+npm run test:desktop   # desktop smoke test with synthetic logs
+npm run dist:mac       # macOS DMG + ZIP, Apple Silicon and Intel
+npm run dist:win       # Windows installer + ZIP, x64 and ARM64
+```
 
-MIT. Not affiliated with Anthropic or OpenAI.
+Build installers on the matching operating system. Outputs go into `release/`. The GitHub workflows check macOS and Windows; a version tag starts packaging and creates a **draft** release for review.
+
+| Explore | |
+| :--- | :--- |
+| [Architecture](docs/architecture.md) | App structure and module responsibilities |
+| [Accuracy and sources](docs/accuracy.md) | Accounting rules, pricing, and reset inference |
+| [Validation](docs/validation.md) | What has been tested and remaining platform checks |
+| [Release guide](docs/releasing.md) | Packaging, signing, and publication |
+| [Security policy](SECURITY.md) | How to report a vulnerability privately |
+
+## Acknowledgements
+
+Research was informed by [Vorssaint's public usage-tracking documentation and source](https://github.com/vorssaint/vorssaint-utils/tree/main/Sources/Vorssaint/Services/AgentUsage). TokenCal uses its own TypeScript implementation, interface, and brand assets.
+
+---
+
+<div align="center">
+
+**Every token. In view.**
+
+[MIT licensed](LICENSE) · Built for the open-source community · Not affiliated with Anthropic or OpenAI
+
+</div>

@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="800" viewBox="0 0 1600 800">
+  <defs>
+    <linearGradient id="background" x2="1" y2="1"><stop stop-color="#171c28"/><stop offset="1" stop-color="#0d1017"/></linearGradient>
+    <radialGradient id="glow"><stop stop-color="#397dff" stop-opacity=".17"/><stop offset="1" stop-color="#397dff" stop-opacity="0"/></radialGradient>
+    <linearGradient id="panel" x2="0" y2="1"><stop stop-color="#242c3d"/><stop offset="1" stop-color="#191f2c"/></linearGradient>
+  </defs>
+  <rect width="1600" height="800" rx="28" fill="url(#background)"/>
+  <ellipse cx="1210" cy="410" rx="480" ry="400" fill="url(#glow)"/>
+  <path d="M80 141H1520M80 693H1520" stroke="#303749"/>
+  <g font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif">
+    <rect x="80" y="58" width="56" height="56" rx="15" fill="#272e3d" stroke="#414b60"/>
+    <g transform="translate(84 62) scale(1.5)"><path d="M4 6H19V11H14V26H9V11H4Z" fill="#f6f8ff"/><path d="M26 6H22L17 11V21L22 26H28V21H24L22 19V13L24 11H28V6Z" fill="#397dff"/></g>
+    <text x="154" y="96" fill="#f6f8ff" font-size="32" font-weight="650" letter-spacing="-1">TokenCal</text>
+    <circle cx="1284" cy="86" r="5" fill="#74a3ff"/>
+    <text x="1302" y="94" fill="#b4bed2" font-size="21">macOS + Windows</text>
+    <text x="80" y="210" fill="#86aaff" font-size="17" font-weight="600" letter-spacing="3">YOUR AI CODING COMPANION</text>
+    <text x="74" y="320" fill="#f6f8ff" font-size="94" font-weight="700" letter-spacing="-5">Every token.</text>
+    <text x="74" y="421" fill="#75a2ff" font-size="94" font-weight="700" letter-spacing="-5">In view.</text>
+    <text x="80" y="484" fill="#b5bfd1" font-size="27">Costs, sessions, and usage limits.</text>
+    <text x="80" y="522" fill="#b5bfd1" font-size="27">Right where you work.</text>
+    <rect x="80" y="571" width="177" height="46" rx="23" fill="#222a38" stroke="#3b465c"/>
+    <circle cx="104" cy="594" r="5" fill="#d3ad88"/>
+    <text x="121" y="601" fill="#e0e6f2" font-size="20">Claude Code</text>
+    <rect x="271" y="571" width="125" height="46" rx="23" fill="#222a38" stroke="#3b465c"/>
+    <path d="M291 587L298 594L291 601M302 602H312" fill="none" stroke="#75a2ff" stroke-width="2"/>
+    <text x="321" y="601" fill="#e0e6f2" font-size="20">Codex</text>
+    <rect x="813" y="200" width="691" height="436" rx="25" fill="#090c12" opacity=".5"/>
+    <rect x="801" y="185" width="691" height="436" rx="25" fill="url(#panel)" stroke="#414c64"/>
+    <path d="M801 253H1492" stroke="#3a445a"/>
+    <circle cx="831" cy="220" r="6" fill="#53617a"/>
+    <circle cx="852" cy="220" r="6" fill="#53617a"/>
+    <circle cx="873" cy="220" r="6" fill="#53617a"/>
+    <text x="911" y="228" fill="#dce4f6" font-size="21" font-weight="600">Your usage, at a glance.</text>
+    <circle cx="1351" cy="221" r="4" fill="#75a2ff"/>
+    <text x="1366" y="228" fill="#9fb9ed" font-size="17">Local only</text>
+    <text x="838" y="298" fill="#a9b6cc" font-size="19">Today's API value</text>
+    <rect x="1024" y="278" width="107" height="26" rx="5" fill="#2c374c"/>
+    <text x="1036" y="296" fill="#bbc9e2" font-size="12" letter-spacing="1">ESTIMATED</text>
+    <text x="835" y="375" fill="#f6f8ff" font-size="70" font-weight="650" letter-spacing="-3">$5.89</text>
+    <text x="1250" y="337" fill="#f6f8ff" font-size="33" font-weight="600">3.4M</text>
+    <text x="1250" y="365" fill="#a9b6cc" font-size="17">tokens today</text>
+    <path d="M838 401H1455" stroke="#3a445a"/>
+    <text x="838" y="443" fill="#e0e6f2" font-size="21" font-weight="600">Five-hour usage</text>
+    <text x="838" y="484" fill="#cbb49c" font-size="18">Claude Code</text>
+    <text x="1455" y="484" text-anchor="end" fill="#dce4f6" font-size="18">38%</text>
+    <rect x="838" y="499" width="617" height="8" rx="4" fill="#343d50"/>
+    <rect x="838" y="499" width="234" height="8" rx="4" fill="#c5a582"/>
+    <text x="838" y="546" fill="#90b6ff" font-size="18">Codex</text>
+    <text x="1455" y="546" text-anchor="end" fill="#dce4f6" font-size="18">24%</text>
+    <rect x="838" y="561" width="617" height="8" rx="4" fill="#343d50"/>
+    <rect x="838" y="561" width="148" height="8" rx="4" fill="#538eff"/>
+    <text x="1455" y="601" text-anchor="end" fill="#8a99b3" font-size="14">ILLUSTRATIVE SAMPLE DATA</text>
+    <text x="80" y="742" fill="#a9b6cc" font-size="17" letter-spacing="2">ON YOUR DEVICE.</text>
+    <text x="349" y="742" fill="#a9b6cc" font-size="17" letter-spacing="2">NO ACCOUNT.</text>
+    <text x="574" y="742" fill="#a9b6cc" font-size="17" letter-spacing="2">MIT LICENSE.</text>
+    <text x="1520" y="742" text-anchor="end" fill="#6c7e9b" font-size="17">Free. Open source. Yours.</text>
+  </g>
+</svg>
