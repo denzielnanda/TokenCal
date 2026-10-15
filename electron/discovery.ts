@@ -13,7 +13,7 @@ export interface DiscoveryContext {
 }
 export function sourceCandidates(settings: Settings, context: DiscoveryContext) {
   const { home, platform, env } = context;
-  const p = platform === 'win32' ? path.win32 : path;
+  const p = platform === 'win32' ? path.win32 : path.posix;
   const claude = [settings.claudePath],
     codex = [settings.codexPath],
     history = [settings.claudeHistoryPath];

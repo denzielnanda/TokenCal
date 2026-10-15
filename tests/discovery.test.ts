@@ -37,6 +37,35 @@ describe('automatic local source discovery', () => {
     expect(manual.claude).toEqual([settings.claudePath]);
     expect(manual.codex).toEqual([settings.codexPath]);
   });
+  it.each(['darwin', 'win32'] as const)(
+    'uses %s path conventions independently of the host OS',
+    (platform) => {
+      const p = platform === 'win32' ? path.win32 : path.posix;
+      const home = platform === 'win32' ? 'C:\\Users\\Ada' : '/home/ada';
+      const claudeHome = p.join(home, 'custom-claude');
+      const codexHome = p.join(home, 'custom-codex');
+      const settings = {
+        ...defaultSettings(home),
+        claudePath: p.join(claudeHome, 'projects'),
+        codexPath: p.join(codexHome, 'sessions'),
+      };
+      const roots = sourceCandidates(settings, {
+        home,
+        platform,
+        env: { CLAUDE_CONFIG_DIR: claudeHome, CODEX_HOME: codexHome },
+        wslHomes: [],
+      });
+      expect(roots.claude).toEqual([
+        p.join(claudeHome, 'projects'),
+        p.join(home, '.claude', 'projects'),
+        p.join(home, '.config', 'claude', 'projects'),
+      ]);
+      expect(roots.codex).toEqual([
+        p.join(codexHome, 'sessions'),
+        p.join(home, '.codex', 'sessions'),
+      ]);
+    },
+  );
   it('maps running WSL homes without starting distributions or interpolating shell commands', () => {
     const settings = {
       ...defaultSettings('/tmp/fixture'),
