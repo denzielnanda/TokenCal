@@ -11,7 +11,7 @@ const claudeDir =
     : path.join(home, '.config', 'claude'));
 const settings = {
   claudeEnabled: true,
-  liveClaudeUsage: false,
+  claudePlanSource: 'local',
   codexEnabled: true,
   claudePath: path.join(claudeDir, 'projects'),
   codexPath: path.join(process.env.CODEX_HOME || path.join(home, '.codex'), 'sessions'),

@@ -62,9 +62,10 @@ async function refreshClaudeLive(force = false, allowPrompt = false) {
   publish();
 }
 function visibleSnapshot(): Snapshot {
-  const live = settings.claudeEnabled && settings.liveClaudeUsage ? claudeLive.getLimits() : null;
+  const accountSource = settings.claudePlanSource === 'account';
+  const live = settings.claudeEnabled && accountSource ? claudeLive.getLimits() : null;
   const limits = snapshot.limits.map(provider => provider.provider === 'claude'
-    ? live ?? { ...provider, note: settings.liveClaudeUsage
+    ? live ?? { ...provider, note: accountSource
       ? claudeLive.status.message + (provider.windows.length ? ' Saved desktop history is shown below.' : '')
       : provider.note } : provider);
   return { ...snapshot, settings, scanning, widget, limits, claudeLive: claudeLive.status };
@@ -307,7 +308,16 @@ function registerIPC() {
   });
   handle('settings:update', async (patch: unknown) => {
     const next = validateSettings(patch, settings);
-    const liveChanged = next.liveClaudeUsage !== settings.liveClaudeUsage ||
+    if (next.claudePlanSource === 'account' && settings.claudePlanSource !== 'account') {
+      const consent = await dialog.showMessageBox({
+        type: 'question', title: 'Enable optional live Claude plan usage?',
+        message: 'Use Claude Code’s saved login to read current plan allowances from Anthropic?',
+        detail: 'This optional mode contacts Anthropic’s usage API and may ask for macOS Keychain permission. It does not send conversations, request an API key, or change Claude settings. Local token, cost, and session tracking works without it.',
+        buttons: ['Enable live plan usage', 'Keep local tracking'], defaultId: 1, cancelId: 1,
+      });
+      if (consent.response !== 0) return settings;
+    }
+    const liveChanged = next.claudePlanSource !== settings.claudePlanSource ||
       next.claudeEnabled !== settings.claudeEnabled || next.claudePath !== settings.claudePath;
     if (next.launchAtLogin !== settings.launchAtLogin)
       app.setLoginItemSettings({ openAtLogin: next.launchAtLogin, args: ['--hidden'] });
@@ -317,7 +327,7 @@ function registerIPC() {
     schedule();
     publish();
     collect();
-    if (liveChanged) void refreshClaudeLive(true, next.liveClaudeUsage && next.claudeEnabled);
+    if (liveChanged) void refreshClaudeLive(true, next.claudePlanSource === 'account' && next.claudeEnabled);
     return settings;
   });
   handle('path:choose', async (kind: unknown) => {
@@ -479,9 +489,9 @@ void app.whenReady().then(async () => {
   await readDisplays();
   applyNotch();
   collect();
-  // First launch may show macOS's normal permission dialog for Claude Code's Keychain item.
-  // Later background polls cannot open permission dialogs; an explicit Refresh can retry.
-  void refreshClaudeLive(false, true);
+  // Local mode never reads a login or makes a provider request. Previously enabled
+  // account mode may poll silently; permission prompts require an explicit user action.
+  void refreshClaudeLive();
   schedule();
   if (!process.argv.includes('--hidden') && !app.getLoginItemSettings().wasOpenedAtLogin)
     showDashboard();

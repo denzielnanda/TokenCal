@@ -3,7 +3,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import os from 'node:os';
 import { CLAUDE_USAGE_URL, ClaudeLiveUsage, parseClaudeLogin, parseClaudeUsage, readClaudeLogin } from '../electron/claude-live';
-import { defaultSettings } from '../electron/settings';
+import { defaultSettings, validateSettings } from '../electron/settings';
 
 const now = Date.now(), token = 'fixture-token-do-not-export';
 const loginData = (value = token) => ({ claudeAiOauth: { accessToken: value,
@@ -11,12 +11,14 @@ const loginData = (value = token) => ({ claudeAiOauth: { accessToken: value,
   scopes: ['user:profile'], subscriptionType: 'max' } });
 const usage = (percent = 4) => ({ five_hour: { utilization: percent, resets_at: new Date(now + 3_600_000).toISOString() },
   seven_day: { utilization: 79, resets_at: new Date(now + 86_400_000).toISOString() } });
-const settings = defaultSettings('/fixture');
+const localSettings = defaultSettings('/fixture');
+const settings = { ...localSettings, claudePlanSource: 'account' as const };
 const roots: string[] = [];
 afterEach(async () => { for (const root of roots.splice(0)) await fs.rm(root, { recursive: true, force: true }); });
-describe('automatic Claude plan usage', () => {
-  it('is enabled for every installation and validates the saved login without retaining refresh credentials', () => {
-    expect(settings.liveClaudeUsage).toBe(true);
+describe('optional Claude account plan usage', () => {
+  it('uses local files for new and upgraded installations and validates optional logins', () => {
+    expect(localSettings.claudePlanSource).toBe('local');
+    expect(validateSettings({ liveClaudeUsage: true }, localSettings).claudePlanSource).toBe('local');
     const result = parseClaudeLogin(loginData(), now);
     expect(result).toEqual({ login: { token, expiresAt: now + 3_600_000, plan: 'max' } });
     expect(parseClaudeLogin({ claudeAiOauth: { accessToken: token, scopes: ['user:inference'] } }, now))
@@ -25,6 +27,14 @@ describe('automatic Claude plan usage', () => {
       .toEqual({ error: 'expired' });
     expect(parseClaudeLogin({ claudeAiOauth: { accessToken: token + '\r\nInjected: header' } }, now))
       .toEqual({ error: 'missing' });
+  });
+  it('never reads credentials, prompts, or calls the API in default local mode, even on Refresh', async () => {
+    let loginReads = 0, requests = 0;
+    const live = new ClaudeLiveUsage(async () => { loginReads++; return parseClaudeLogin(loginData(), now); }, async () => { requests++; return Response.json(usage()); });
+    await live.refresh(localSettings, false, true, now);
+    await live.refresh(localSettings, true, true, now + 1000);
+    expect(loginReads).toBe(0); expect(requests).toBe(0);
+    expect(live.getLimits()).toBeNull();
   });
   it('reads Windows/custom-profile login files without modifying any agent settings', async () => {
     const root = await fs.mkdtemp(path.join(os.tmpdir(), 'tokencal-login-test-')); roots.push(root);
@@ -98,7 +108,7 @@ describe('automatic Claude plan usage', () => {
     currentToken = 'different-fixture-account-token';
     offline = true;
     await live.refresh(settings, true, false, now + 1000); expect(live.getLimits()).toBeNull();
-    await live.refresh({ ...settings, liveClaudeUsage: false }, true, true, now + 1000);
+    await live.refresh({ ...settings, claudePlanSource: 'local' }, true, true, now + 1000);
     expect(readCount).toBe(2); expect(live.status.state).toBe('disabled'); expect(live.getLimits()).toBeNull();
   });
   it('ignores an in-flight login result after tracking is disabled', async () => {
@@ -108,7 +118,7 @@ describe('automatic Claude plan usage', () => {
       requests++; return Response.json(usage());
     });
     const pending = live.refresh(settings, true, false, now);
-    await live.refresh({ ...settings, liveClaudeUsage: false }, true, false, now + 100);
+    await live.refresh({ ...settings, claudePlanSource: 'local' }, true, false, now + 100);
     finish!(parseClaudeLogin(loginData(), now)); await pending;
     expect(requests).toBe(0); expect(live.status.state).toBe('disabled'); expect(live.getLimits()).toBeNull();
   });

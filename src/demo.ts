@@ -16,7 +16,7 @@ export function demoSnapshot(): Snapshot {
     notchEnabled: false,
     widgetMode: 'auto',
     autoDetectSources: true,
-    liveClaudeUsage: true,
+    claudePlanSource: 'local',
     trayCost: true,
     notifications: false,
     dailyBudget: 25,

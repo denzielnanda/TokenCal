@@ -139,7 +139,9 @@ try {
   // Real provider transport is replaced only inside this isolated test process.
   // No genuine credentials, Keychain reads, or network requests are used.
   await application.evaluate(() => {
+    globalThis.tokenCalTestRequests = 0;
     globalThis.fetch = async (url, options) => {
+      globalThis.tokenCalTestRequests++;
       if (url !== 'https://api.anthropic.com/api/oauth/usage' || options.redirect !== 'error' ||
         options.headers.Authorization !== 'Bearer tokencal-synthetic-login-token')
         throw new Error('Unexpected provider request.');
@@ -154,6 +156,22 @@ try {
     expiresAt: Date.now() + 3600000, scopes: ['user:profile'], subscriptionType: 'max' } });
   await fs.writeFile(credentialsPath, credentials);
   await page.evaluate(() => window.tokenCal.refresh());
+  expect((await page.evaluate(() => window.tokenCal.getSnapshot())).settings.claudePlanSource).toBe('local');
+  expect(await application.evaluate(() => globalThis.tokenCalTestRequests)).toBe(0);
+  expect(await page.evaluate(async () => (await window.tokenCal.getSnapshot()).limits
+    .find(p => p.provider === 'claude').windows[0].source)).toBe('claude-desktop');
+  // Live usage is optional and cancelling consent cannot enable it.
+  await application.evaluate(({ dialog }) => {
+    dialog.showMessageBox = async () => ({ response: 1, checkboxChecked: false });
+  });
+  expect((await page.evaluate(() => window.tokenCal.updateSettings({ claudePlanSource: 'account' })))
+    .claudePlanSource).toBe('local');
+  expect(await application.evaluate(() => globalThis.tokenCalTestRequests)).toBe(0);
+  await application.evaluate(({ dialog }) => {
+    dialog.showMessageBox = async () => ({ response: 0, checkboxChecked: false });
+  });
+  await page.getByText('Optional live Claude plan usage', { exact: true }).click();
+  await page.getByRole('switch', { name: 'Use Claude account for live plan usage' }).click();
   await expect.poll(() => page.evaluate(async () => (await window.tokenCal.getSnapshot()).claudeLive.state)).toBe('ready');
   const live = await page.evaluate(async () => (await window.tokenCal.getSnapshot()).limits
     .find(p => p.provider === 'claude'));
@@ -162,7 +180,7 @@ try {
   expect(JSON.stringify(live)).not.toContain('tokencal-synthetic-login-token');
   expect(await fs.readFile(credentialsPath, 'utf8')).toBe(credentials);
   expect(await fs.stat(path.join(root, '.claude', 'settings.json')).then(() => true, () => false)).toBe(false);
-  await page.getByRole('switch', { name: 'Refresh Claude plan usage automatically' }).click();
+  await page.getByRole('switch', { name: 'Use Claude account for live plan usage' }).click();
   await expect.poll(() => page.evaluate(async () => (await window.tokenCal.getSnapshot()).claudeLive.state)).toBe('disabled');
   expect(await page.evaluate(async () => (await window.tokenCal.getSnapshot()).limits
     .find(p => p.provider === 'claude').windows[0].source)).toBe('claude-desktop');
@@ -248,7 +266,7 @@ try {
   await page.getByRole('button', { name: 'Back to my usage' }).click();
   expect(errors).toEqual([]);
   console.log(
-    'Desktop smoke passed: automatic Claude login detection, live quotas/provider resets, no agent edits or credential export, disable/fallback, native title bar, movable windows, collector, sandbox, navigation, settings, widget, tray, CSV, sample mode.',
+    'Desktop smoke passed: no-login local default, zero default API calls, optional account consent, live quota fixtures, no agent edits/credential export, local fallback, native title bar, movable windows, collector, sandbox, settings, widget, tray, CSV, sample mode.',
   );
 } finally {
   await application?.close();

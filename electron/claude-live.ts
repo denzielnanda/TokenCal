@@ -124,7 +124,7 @@ export class ClaudeLiveUsage {
     })) };
   }
   async refresh(settings: Settings, force = false, allowPrompt = false, now = Date.now()) {
-    if (!settings.claudeEnabled || !settings.liveClaudeUsage) {
+    if (!settings.claudeEnabled || settings.claudePlanSource !== 'account') {
       this.generation++; this.controller?.abort();
       this.last = null; this.token = null; this.profile = '';
       this.setStatus('disabled', now);
@@ -158,7 +158,7 @@ export class ClaudeLiveUsage {
       const response = await this.transport(CLAUDE_USAGE_URL, {
         method: 'GET', redirect: 'error', cache: 'no-store', signal: AbortSignal.any([signal, AbortSignal.timeout(10_000)]),
         headers: { Authorization: `Bearer ${token}`, 'anthropic-beta': 'oauth-2025-04-20',
-          Accept: 'application/json', 'User-Agent': 'TokenCal/0.2.2' },
+          Accept: 'application/json', 'User-Agent': 'TokenCal/0.2.3' },
       });
       if (generation !== this.generation) return;
       if (response.status === 429) {

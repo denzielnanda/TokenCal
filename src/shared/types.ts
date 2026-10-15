@@ -122,7 +122,7 @@ export interface Settings {
   notchEnabled: boolean;
   widgetMode: WidgetMode;
   autoDetectSources: boolean;
-  liveClaudeUsage: boolean;
+  claudePlanSource: 'local' | 'account';
   trayCost: boolean;
   notifications: boolean;
   dailyBudget: number;
