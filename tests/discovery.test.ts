@@ -15,7 +15,7 @@ describe('automatic local source discovery', () => {
     const settings = defaultSettings(home);
     settings.claudePath = path.join(home, '.claude/projects');
     settings.codexPath = path.join(home, '.codex/sessions');
-    const context = { home, platform: 'darwin' as const, env: {}, wslHomes: [] };
+    const context = { home, platform: process.platform, env: {}, wslHomes: [] };
     expect((await discoverSources(settings, context)).claude).toEqual([settings.claudePath]);
     const legacy = path.join(home, '.config/claude/projects');
     await fs.mkdir(legacy, { recursive: true });
